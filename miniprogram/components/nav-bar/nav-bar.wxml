@@ -1,0 +1,25 @@
+<!-- Custom nav: reserve the native capsule area, then render the product bar below it. -->
+<view class="nav-bar">
+  <view class="capsule-space" style="height: {{layout.businessBarTop}}px;"></view>
+  <view class="business-bar" style="height: {{layout.businessBarHeight}}px;">
+    <view class="profile-btn" bind:tap="onProfileTap" role="button" aria-label="用户画像">
+      <text class="profile-close" wx:if="{{profileOpen}}">×</text>
+      <view class="profile-symbol" wx:else>
+        <view class="profile-head main"></view>
+        <view class="profile-shoulder main"></view>
+        <view class="profile-head side"></view>
+        <view class="profile-shoulder side"></view>
+      </view>
+    </view>
+
+    <view class="title-group">
+      <text class="nav-title">中文水平评测</text>
+      <text class="user-badge" wx:if="{{userId}}">{{userId}}</text>
+    </view>
+
+    <view class="nav-actions">
+      <view class="action-btn end" bind:tap="onEndTap" role="button">结束评测</view>
+      <view class="action-btn exit" bind:tap="onExitTap" role="button">退出</view>
+    </view>
+  </view>
+</view>

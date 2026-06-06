@@ -1,0 +1,56 @@
+.tf {
+  display: flex;
+  gap: 20rpx;
+  flex-wrap: wrap;
+}
+
+.tf-btn {
+  flex: 1;
+  min-width: 200rpx;
+  padding: 28rpx 20rpx;
+  border: 2rpx solid #e5e7eb;
+  border-radius: 16rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+  background: #fff;
+}
+
+.tf-btn.true.active {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.tf-btn.false.active {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.tf-icon {
+  font-size: 44rpx;
+}
+
+.tf-btn.true .tf-icon { color: #22c55e; }
+.tf-btn.false .tf-icon { color: #dc2626; }
+
+.tf-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.confirm-btn {
+  width: 100%;
+  margin-top: 8rpx;
+  height: 76rpx;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: 600;
+  border-radius: 14rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

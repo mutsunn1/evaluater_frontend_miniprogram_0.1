@@ -1,0 +1,42 @@
+<!-- Unified question renderer — dispatches to sub-components by type -->
+<view class="qr">
+  <!-- Meta tags: scene, grammar focus, target level -->
+  <view class="qr-meta" wx:if="{{scene || grammarFocus || targetLevel}}">
+    <text class="meta-tag" wx:if="{{scene}}">场景: {{scene}}</text>
+    <text class="meta-tag" wx:if="{{grammarFocus}}">语法: {{grammarFocus}}</text>
+    <text class="meta-tag" wx:if="{{targetLevel}}">HSK {{targetLevel}}</text>
+  </view>
+
+  <!-- Question text -->
+  <text class="qr-text" wx:if="{{questionText && qType !== 'reading_comprehension'}}">{{questionText}}</text>
+
+  <!-- Dispatch by type -->
+  <multiple-choice
+    wx:if="{{qType === 'multiple_choice' || qType === 'multiple_select'}}"
+    options="{{options}}"
+    multiSelect="{{qType === 'multiple_select'}}"
+    bind:answer="onAnswer"
+  />
+
+  <true-false
+    wx:elif="{{qType === 'true_false'}}"
+    bind:answer="onAnswer"
+  />
+
+  <fill-in-blank
+    wx:elif="{{qType === 'fill_in_blank'}}"
+    blankCount="{{blankCount}}"
+    bind:answer="onAnswer"
+  />
+
+  <reading-comprehension
+    wx:elif="{{qType === 'reading_comprehension'}}"
+    passage="{{readingPassage}}"
+    questionText="{{questionText}}"
+    subQuestions="{{subQuestions}}"
+    bind:answer="onAnswer"
+  />
+
+  <!-- Fallback: plain text for unknown types -->
+  <text wx:else class="qr-fallback">不支持的问题类型: {{qType}}</text>
+</view>

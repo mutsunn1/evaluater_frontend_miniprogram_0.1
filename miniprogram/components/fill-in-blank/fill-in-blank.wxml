@@ -1,0 +1,26 @@
+<!-- Fill-in-blank — single or multi-blank text inputs -->
+<view class="fib">
+  <view wx:if="{{blankCount > 1}}" class="blanks">
+    <view wx:for="{{blanks}}" wx:key="*this" class="blank-row">
+      <text class="blank-label">第{{index + 1}}空</text>
+      <input
+        class="blank-input"
+        placeholder="请输入答案"
+        value="{{answers[index] || ''}}"
+        data-idx="{{index}}"
+        bind:input="onInput"
+      />
+    </view>
+  </view>
+  <input
+    wx:else
+    class="blank-input single"
+    placeholder="请输入答案"
+    value="{{singleAnswer}}"
+    bind:input="onSingleInput"
+  />
+
+  <button class="confirm-btn" bind:tap="onConfirm" wx:if="{{canSubmit}}">
+    确认答案
+  </button>
+</view>

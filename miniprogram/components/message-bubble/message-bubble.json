@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "thinking-process": "/components/thinking-process/thinking-process",
+    "question-renderer": "/components/question-renderer/question-renderer"
+  }
+}

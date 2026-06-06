@@ -1,0 +1,59 @@
+<!-- Chat message bubble — uses unified question-renderer for both batch and single -->
+<view class="wrapper wrapper-{{message.role}}">
+  <!-- Thinking steps before question messages -->
+  <thinking-process
+    wx:if="{{message.role === 'question' && message.thinking_steps && message.thinking_steps.length}}"
+    steps="{{message.thinking_steps}}"
+    bind:open="onOpenThinking"
+  />
+
+  <view class="bubble bubble-{{message.role}}">
+    <!-- System / cold_start text -->
+    <text wx:if="{{isTextRole}}" class="bubble-text">{{message.content}}</text>
+
+    <!-- User text -->
+    <text wx:if="{{message.role === 'user'}}" class="bubble-text">{{message.content}}</text>
+
+    <!-- Feedback -->
+    <view wx:elif="{{message.role === 'feedback'}}" class="feedback-wrap">
+      <text class="bubble-text">{{message.content}}</text>
+      <view class="dimension-badge" wx:if="{{message.item_data && message.item_data.skill_dimension}}">
+        {{message.item_data.skill_dimension}}
+      </view>
+    </view>
+
+    <!-- Single question: unified renderer -->
+    <question-renderer
+      wx:if="{{message.role === 'question' && message.item_data}}"
+      itemData="{{message.item_data}}"
+      bind:answer="onSingleAnswer"
+    />
+
+    <!-- Batch questions: unified renderer per question -->
+    <view wx:if="{{message.role === 'question' && message.batch_questions && message.batch_questions.length}}" class="batch-questions">
+      <view wx:for="{{message.batch_questions}}" wx:key="batch_index" class="batch-item">
+        <view class="batch-q-header">
+          <text class="batch-q-num">{{item.batch_index !== undefined ? item.batch_index + 1 : index + 1}}.</text>
+          <text class="batch-q-type" wx:if="{{item.skill_dimension}}">{{item.skill_dimension}}</text>
+        </view>
+        <question-renderer
+          itemData="{{item}}"
+          data-qidx="{{item.batch_index !== undefined ? item.batch_index : index}}"
+          bind:answer="onBatchQuestionAnswer"
+        />
+      </view>
+
+      <button class="batch-submit" disabled="{{!canBatchSubmit}}" bind:tap="onBatchSubmit">
+        提交全部答案
+      </button>
+    </view>
+  </view>
+
+  <text class="time" wx:if="{{showTime}}">{{formattedTime}}</text>
+
+  <thinking-process
+    wx:if="{{message.role !== 'question' && message.thinking_steps && message.thinking_steps.length}}"
+    steps="{{message.thinking_steps}}"
+    bind:open="onOpenThinking"
+  />
+</view>

@@ -1,0 +1,42 @@
+.thinking-inline {
+  margin-bottom: 12rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.step-summary {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 10rpx 16rpx;
+  background: #f8fafc;
+  border-radius: 10rpx;
+  border-left: 4rpx solid #f59e0b;
+}
+
+.step-icon {
+  font-size: 24rpx;
+}
+
+.step-agent {
+  font-size: 24rpx;
+  font-weight: 500;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.step-preview {
+  font-size: 22rpx;
+  color: #9ca3af;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.expand-hint {
+  font-size: 24rpx;
+  color: #3b82f6;
+  padding: 6rpx 0;
+}

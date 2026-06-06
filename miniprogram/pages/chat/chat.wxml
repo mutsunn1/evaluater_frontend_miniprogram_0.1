@@ -1,0 +1,121 @@
+<!-- Chat page — full layout with all Phase 2 components -->
+<view class="page">
+  <!-- Custom nav bar with profile toggle -->
+  <nav-bar
+    userId="{{userId}}"
+    profileOpen="{{profileOpen}}"
+    bind:end="onEndTap"
+    bind:exit="onExitTap"
+    bind:profiletoggle="onProfileToggle"
+  />
+
+  <!-- Profile drawer (slides down from nav, compresses chat) -->
+  <profile-drawer
+    userId="{{userId}}"
+    open="{{profileOpen}}"
+  />
+
+  <!-- Main content: chat area -->
+  <view class="main">
+    <scroll-view
+      class="chat-area"
+      scroll-y
+      scroll-into-view="{{scrollTarget}}"
+      scroll-with-animation
+    >
+      <!-- Messages -->
+      <view class="message-list">
+        <message-bubble
+          wx:for="{{messages}}"
+          wx:key="id"
+          id="msg-{{item.id}}"
+          message="{{item}}"
+          bind:batchsubmit="onBatchSubmit"
+          bind:openthinking="onOpenThinking"
+        />
+      </view>
+
+      <!-- Empty state -->
+      <view class="empty-chat" wx:if="{{messages.length === 0}}">
+        <text class="empty-text">{{isColdStart ? '正在准备冷启动...' : '正在准备评测...'}}</text>
+      </view>
+
+      <!-- Live thinking indicator during loading -->
+      <view class="live-thinking" wx:if="{{isLoading && liveThinking.length > 0}}">
+        <thinking-process
+          steps="{{liveThinking}}"
+          limit="2"
+          bind:open="onOpenThinking"
+        />
+        <view class="loading-spinner">
+          <text class="spinner-icon">⟳</text>
+          <text class="spinner-text">{{loadingText}}</text>
+        </view>
+      </view>
+
+      <view id="chat-bottom"></view>
+    </scroll-view>
+
+    <!-- Bottom input / loading / waiting area -->
+    <view class="bottom-area">
+      <!-- Cold start input -->
+      <view class="input-row" wx:if="{{isColdStart && isWaitingAnswer}}">
+        <input
+          class="text-input"
+          placeholder="请简要回答..."
+          value="{{userInput}}"
+          bind:input="onInputChange"
+          disabled="{{isLoading}}"
+          confirm-type="send"
+          bind:confirm="onSendAnswer"
+        />
+        <button class="send-btn" bind:tap="onSendAnswer" disabled="{{!userInput || isLoading}}">发送</button>
+      </view>
+
+      <!-- Normal input when waiting for answer -->
+      <view class="input-row" wx:elif="{{isWaitingAnswer && !isLoading}}">
+        <view class="text-input disabled">请在上方题目中作答</view>
+      </view>
+
+      <!-- Loading state -->
+      <view class="loading-hint" wx:elif="{{isLoading}}">
+        <text>{{loadingText}}</text>
+      </view>
+
+      <!-- Idle state -->
+      <view class="loading-hint" wx:else>
+        <text wx:if="{{messages.length > 0}}">等待出题中...</text>
+      </view>
+
+      <!-- Error banner -->
+      <view class="error-bar" wx:if="{{error}}">
+        <text class="error-text">{{error}}</text>
+        <button class="retry-btn" bind:tap="onRetry">重试</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- Confidence bar — always at bottom -->
+  <confidence-bar confidence="{{confidence}}" />
+
+  <!-- Thinking drawer (right slide-in) -->
+  <thinking-drawer
+    open="{{thinkingDrawerOpen}}"
+    steps="{{thinkingDrawerSteps}}"
+    bind:close="onCloseThinking"
+  />
+
+  <!-- Confirm dialogs -->
+  <view class="modal-mask" wx:if="{{showEndConfirm || showExitConfirm}}" bind:tap="onCancelConfirm">
+    <view class="modal-card" catchtap>
+      <view class="modal-title">{{showEndConfirm ? '结束评测' : '退出'}}</view>
+      <view class="modal-body">
+        {{showEndConfirm ? '确定要结束当前评测吗？结束后将生成评测报告。' : '确定要退出吗？当前评测进度将丢失。'}}
+      </view>
+      <view class="modal-actions">
+        <button class="modal-btn cancel" bind:tap="onCancelConfirm">取消</button>
+        <button class="modal-btn confirm" bind:tap="onConfirmAction">{{showEndConfirm ? '结束' : '退出'}}</button>
+      </view>
+    </view>
+  </view>
+</view>

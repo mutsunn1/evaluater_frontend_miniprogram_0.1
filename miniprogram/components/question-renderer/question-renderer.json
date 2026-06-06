@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "usingComponents": {
+    "multiple-choice": "/components/multiple-choice/multiple-choice",
+    "true-false": "/components/true-false/true-false",
+    "fill-in-blank": "/components/fill-in-blank/fill-in-blank",
+    "reading-comprehension": "/components/reading-comprehension/reading-comprehension"
+  }
+}

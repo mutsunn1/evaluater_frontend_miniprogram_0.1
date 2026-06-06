@@ -1,0 +1,10 @@
+{
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/nav-bar",
+    "profile-drawer": "/components/profile-drawer/profile-drawer",
+    "message-bubble": "/components/message-bubble/message-bubble",
+    "thinking-process": "/components/thinking-process/thinking-process",
+    "thinking-drawer": "/components/thinking-drawer/thinking-drawer",
+    "confidence-bar": "/components/confidence-bar/confidence-bar"
+  }
+}

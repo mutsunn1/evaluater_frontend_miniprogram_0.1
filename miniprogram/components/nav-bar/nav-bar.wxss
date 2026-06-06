@@ -1,0 +1,185 @@
+.nav-bar {
+  background: #fff;
+  border-bottom: 1rpx solid #e5e7eb;
+}
+
+.capsule-space {
+  width: 100%;
+}
+
+.business-bar {
+  display: grid;
+  grid-template-columns: 72rpx minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 14rpx;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+}
+
+.profile-btn {
+  width: 72rpx;
+  min-width: 72rpx;
+  max-width: 72rpx;
+  height: 64rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 16rpx;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  line-height: 1;
+  box-sizing: border-box;
+  justify-self: start;
+}
+
+.profile-close {
+  font-size: 36rpx;
+  color: #4b5563;
+  line-height: 1;
+}
+
+.profile-symbol {
+  position: relative;
+  width: 42rpx;
+  height: 38rpx;
+}
+
+.profile-head,
+.profile-shoulder {
+  position: absolute;
+  border: 4rpx solid #4b5563;
+}
+
+.profile-head {
+  top: 0;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+}
+
+.profile-head.main {
+  left: 5rpx;
+}
+
+.profile-head.side {
+  right: 2rpx;
+  opacity: 0.9;
+}
+
+.profile-shoulder {
+  bottom: 0;
+  width: 22rpx;
+  height: 15rpx;
+  border-bottom: none;
+  border-radius: 18rpx 18rpx 0 0;
+}
+
+.profile-shoulder.main {
+  left: 0;
+}
+
+.profile-shoulder.side {
+  right: 0;
+  opacity: 0.9;
+}
+
+.title-group {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  overflow: hidden;
+}
+
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-badge {
+  background: #eff6ff;
+  min-width: 46rpx;
+  height: 46rpx;
+  padding: 0 14rpx;
+  border-radius: 23rpx;
+  line-height: 46rpx;
+  text-align: center;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #3b82f6;
+  max-width: 110rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.action-btn {
+  width: 120rpx;
+  min-width: 0;
+  height: 64rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 14rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 500;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+.action-btn.end {
+  width: 156rpx;
+  background: #dc2626;
+  color: #fff;
+}
+
+.action-btn.exit {
+  width: 100rpx;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+@media (max-width: 370px) {
+  .business-bar {
+    grid-template-columns: 64rpx minmax(0, 1fr) auto;
+    column-gap: 10rpx;
+    padding: 0 18rpx;
+  }
+
+  .profile-btn {
+    width: 64rpx;
+    min-width: 64rpx;
+    max-width: 64rpx;
+    height: 60rpx;
+  }
+
+  .nav-title {
+    font-size: 30rpx;
+  }
+
+  .action-btn {
+    height: 60rpx;
+    font-size: 26rpx;
+  }
+
+  .action-btn.end {
+    width: 112rpx;
+  }
+
+  .action-btn.exit { width: 88rpx; }
+}

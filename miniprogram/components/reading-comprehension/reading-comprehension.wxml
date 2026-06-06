@@ -1,0 +1,28 @@
+<!-- Reading comprehension — passage + sub-questions with inputs -->
+<view class="rc">
+  <!-- Passage -->
+  <view class="passage" wx:if="{{passage}}">
+    <text class="passage-text">{{passage}}</text>
+  </view>
+
+  <!-- Main question text -->
+  <text class="question-text" wx:if="{{questionText}}">{{questionText}}</text>
+
+  <!-- Sub-questions -->
+  <view class="sub-qs">
+    <view wx:for="{{subQuestions}}" wx:key="sub_id" class="sub-q">
+      <text class="sub-q-text">{{index + 1}}. {{item.question_text}}</text>
+      <input
+        class="sub-q-input"
+        placeholder="请输入答案"
+        value="{{answers[item.sub_id] || ''}}"
+        data-sid="{{item.sub_id}}"
+        bind:input="onInput"
+      />
+    </view>
+  </view>
+
+  <button class="confirm-btn" bind:tap="onConfirm" wx:if="{{canSubmit}}">
+    确认答案
+  </button>
+</view>

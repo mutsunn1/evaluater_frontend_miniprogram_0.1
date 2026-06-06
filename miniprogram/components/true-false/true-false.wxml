@@ -1,0 +1,23 @@
+<!-- True/False — two large tappable buttons -->
+<view class="tf">
+  <view
+    class="tf-btn true {{answer === 'true' ? 'active' : ''}}"
+    bind:tap="onTap"
+    data-val="true"
+  >
+    <text class="tf-icon">✓</text>
+    <text class="tf-label">正确</text>
+  </view>
+  <view
+    class="tf-btn false {{answer === 'false' ? 'active' : ''}}"
+    bind:tap="onTap"
+    data-val="false"
+  >
+    <text class="tf-icon">✕</text>
+    <text class="tf-label">错误</text>
+  </view>
+
+  <button class="confirm-btn" bind:tap="onConfirm" wx:if="{{answer}}">
+    确认答案
+  </button>
+</view>

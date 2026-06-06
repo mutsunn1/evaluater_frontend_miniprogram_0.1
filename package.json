@@ -1,0 +1,20 @@
+{
+  "name": "miniprogram-ts-quickstart",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "miniprogram-api-typings": "^2.8.3-1",
+    "vitest": "^4.1.8"
+  },
+  "dependencies": {
+    "uuid": "^14.0.0"
+  }
+}

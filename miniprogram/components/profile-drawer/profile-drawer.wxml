@@ -1,0 +1,41 @@
+<!-- Top slide-down profile panel — compresses chat area -->
+<view class="drawer {{open ? 'open' : ''}}">
+  <view class="content" wx:if="{{!fetchFailed}}">
+    <view class="level-badge">
+      <text class="level-num">HSK {{profile.hsk_level || '?'}}</text>
+      <text class="level-label">当前等级</text>
+    </view>
+
+    <view class="skill-grid">
+      <view class="skill-card" wx:for="{{skills}}" wx:key="name">
+        <view class="skill-head">
+          <text class="skill-name">{{item.name}}</text>
+          <text class="skill-val">{{item.display}}</text>
+        </view>
+        <view class="skill-bar-bg">
+          <view class="skill-bar-fill skill-{{item.colorKey}}" style="width: {{item.pct}}%;"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="tags-section" wx:if="{{profile.strengths && profile.strengths.length}}">
+      <text class="tag-label">优势</text>
+      <view class="tag-row">
+        <text class="tag tag-good" wx:for="{{profile.strengths}}" wx:key="*this">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="tags-section" wx:if="{{profile.next_focus && profile.next_focus.length}}">
+      <text class="tag-label">建议关注</text>
+      <view class="tag-row">
+        <text class="tag tag-focus" wx:for="{{profile.next_focus}}" wx:key="*this">{{item}}</text>
+      </view>
+    </view>
+
+    <text class="updated" wx:if="{{profile.updated_at}}">更新于 {{profile.updated_at}}</text>
+  </view>
+
+  <view class="error" wx:if="{{fetchFailed}}">
+    <text>无法加载用户画像</text>
+  </view>
+</view>

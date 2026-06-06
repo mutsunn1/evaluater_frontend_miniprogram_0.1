@@ -1,0 +1,18 @@
+<!-- Multiple choice / select — tappable options -->
+<view class="mc">
+  <view
+    wx:for="{{options}}"
+    wx:key="index"
+    class="option {{selected[item.index] ? 'selected' : ''}}"
+    bind:tap="onTap"
+    data-idx="{{item.index}}"
+  >
+    <view class="opt-letter">{{item.index}}</view>
+    <text class="opt-text">{{item.text}}</text>
+    <view class="opt-check" wx:if="{{selected[item.index]}}">✓</view>
+  </view>
+
+  <button class="confirm-btn" bind:tap="onConfirm" wx:if="{{hasSelection}}">
+    确认答案
+  </button>
+</view>

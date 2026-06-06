@@ -1,0 +1,33 @@
+.qr {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.qr-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.meta-tag {
+  font-size: 22rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.qr-text {
+  font-size: 28rpx;
+  color: #1f2937;
+  line-height: 1.7;
+  font-weight: 500;
+  white-space: pre-wrap;
+}
+
+.qr-fallback {
+  font-size: 28rpx;
+  color: #9ca3af;
+  padding: 20rpx 0;
+}

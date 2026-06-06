@@ -1,0 +1,28 @@
+<!-- Login page — matches the mobile Web look: light blue bg, centered white card -->
+<view class="container">
+  <view class="card">
+    <view class="title">中文水平评测系统</view>
+    <view class="subtitle">输入用户 ID 开始评测</view>
+
+    <input
+      class="input"
+      type="text"
+      placeholder="请输入用户 ID"
+      value="{{inputId}}"
+      bind:input="onInputChange"
+      disabled="{{loading}}"
+      maxlength="50"
+    />
+
+    <button
+      class="start-btn"
+      disabled="{{!inputId || loading}}"
+      bind:tap="handleStart"
+      loading="{{loading}}"
+    >
+      {{loading ? '正在创建会话...' : '开始评测'}}
+    </button>
+
+    <view class="error" wx:if="{{errorMsg}}">{{errorMsg}}</view>
+  </view>
+</view>

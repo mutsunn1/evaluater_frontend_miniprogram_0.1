@@ -1,0 +1,27 @@
+node_modules/
+miniprogram_npm/
+
+# WeChat DevTools local config (contains personal settings)
+project.private.config.json
+project.config.json
+
+
+# Build output
+dist/
+.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# TypeScript
+*.tsbuildinfo
