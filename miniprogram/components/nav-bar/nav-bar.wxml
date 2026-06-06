@@ -5,10 +5,8 @@
     <view class="profile-btn" bind:tap="onProfileTap" role="button" aria-label="用户画像">
       <text class="profile-close" wx:if="{{profileOpen}}">×</text>
       <view class="profile-symbol" wx:else>
-        <view class="profile-head main"></view>
-        <view class="profile-shoulder main"></view>
-        <view class="profile-head side"></view>
-        <view class="profile-shoulder side"></view>
+        <view class="person-head"></view>
+        <view class="person-body"></view>
       </view>
     </view>
 

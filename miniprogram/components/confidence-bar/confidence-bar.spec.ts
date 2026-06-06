@@ -33,6 +33,12 @@ function progressColor(c: ConfidenceStats): string {
   return 'yellow';
 }
 
+function normalizePct(v: number): number {
+  const clamped = Math.max(0, Number.isFinite(v) ? v : 0);
+  const pct = clamped <= 1 ? clamped * 100 : clamped;
+  return Math.round(Math.min(100, pct));
+}
+
 describe('confidence-bar logic', () => {
   it('hidden when no rounds and no sample', () => {
     expect(isVisible(makeConfidence())).toBe(false);
@@ -70,9 +76,49 @@ describe('confidence-bar logic', () => {
     expect(progressColor(makeConfidence({ total_rounds: 18, min_rounds: 8, max_rounds: 18 }))).toBe('blue');
   });
 
-  it('accuracy and confidence rounded to integer', () => {
-    const c = makeConfidence({ accuracy: 0.876, confidence: 0.912 });
-    expect(Math.round(c.accuracy * 100)).toBe(88);
-    expect(Math.round(c.confidence * 100)).toBe(91);
+describe('normalizePct (accuracy/confidence display normalization)', () => {
+  it('fractional 0.47 → 47%', () => {
+    expect(normalizePct(0.47)).toBe(47);
   });
+
+  it('fractional 0.876 → 88%', () => {
+    expect(normalizePct(0.876)).toBe(88);
+  });
+
+  it('percent 47 → 47%', () => {
+    expect(normalizePct(47)).toBe(47);
+  });
+
+  it('percent 5000 → clamped to 100%', () => {
+    expect(normalizePct(5000)).toBe(100);
+  });
+
+  it('negative → 0%', () => {
+    expect(normalizePct(-5)).toBe(0);
+  });
+
+  it('NaN → 0%', () => {
+    expect(normalizePct(NaN)).toBe(0);
+  });
+
+  it('Infinity → 0%', () => {
+    expect(normalizePct(Infinity)).toBe(0);
+  });
+
+  it('0 stays 0%', () => {
+    expect(normalizePct(0)).toBe(0);
+  });
+
+  it('boundary 1.0 → 100%', () => {
+    expect(normalizePct(1.0)).toBe(100);
+  });
+
+  it('boundary 1.01 → 1% (already percent)', () => {
+    expect(normalizePct(1.01)).toBe(1);
+  });
+
+  it('50.5 rounds to 51', () => {
+    expect(normalizePct(0.505)).toBe(51);
+  });
+});
 });

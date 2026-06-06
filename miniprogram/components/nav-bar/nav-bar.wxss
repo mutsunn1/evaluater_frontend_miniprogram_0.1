@@ -42,47 +42,31 @@
 
 .profile-symbol {
   position: relative;
-  width: 42rpx;
-  height: 38rpx;
+  width: 38rpx;
+  height: 40rpx;
 }
 
-.profile-head,
-.profile-shoulder {
+.person-head {
   position: absolute;
-  border: 4rpx solid #4b5563;
-}
-
-.profile-head {
   top: 0;
-  width: 14rpx;
-  height: 14rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16rpx;
+  height: 16rpx;
+  border: 4rpx solid #4b5563;
   border-radius: 50%;
 }
 
-.profile-head.main {
-  left: 5rpx;
-}
-
-.profile-head.side {
-  right: 2rpx;
-  opacity: 0.9;
-}
-
-.profile-shoulder {
+.person-body {
+  position: absolute;
   bottom: 0;
-  width: 22rpx;
-  height: 15rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30rpx;
+  height: 18rpx;
+  border: 4rpx solid #4b5563;
   border-bottom: none;
-  border-radius: 18rpx 18rpx 0 0;
-}
-
-.profile-shoulder.main {
-  left: 0;
-}
-
-.profile-shoulder.side {
-  right: 0;
-  opacity: 0.9;
+  border-radius: 20rpx 20rpx 0 0;
 }
 
 .title-group {

@@ -1,5 +1,10 @@
 import type { ConfidenceStats } from '../../types';
 
+function normalizePct(v: number): number {
+  const clamped = Math.max(0, Number.isFinite(v) ? v : 0);
+  const pct = clamped <= 1 ? clamped * 100 : clamped;
+  return Math.round(Math.min(100, pct));
+}
 function derive(c: ConfidenceStats) {
   const visible = c.total_rounds > 0 || c.sample_size > 0;
   const max = c.max_rounds || 18;
@@ -14,8 +19,8 @@ function derive(c: ConfidenceStats) {
     visible,
     progressPct,
     progressColor,
-    accuracyPct: Math.round((c.accuracy || 0) * 100),
-    confidencePct: Math.round((c.confidence || 0) * 100),
+    accuracyPct: normalizePct(c.accuracy || 0),
+    confidencePct: normalizePct(c.confidence || 0),
   };
 }
 
