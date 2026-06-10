@@ -1,8 +1,8 @@
-import { getNavLayout } from '../../modules/nav-helper';
+import { getNavLayout } from "../../modules/nav-helper";
 
 Component({
   properties: {
-    userId: { type: String, value: '' },
+    userId: { type: String, value: "" },
     profileOpen: { type: Boolean, value: false },
   },
 
@@ -28,13 +28,13 @@ Component({
 
   methods: {
     onEndTap() {
-      this.triggerEvent('end');
+      this.triggerEvent("end");
     },
     onExitTap() {
-      this.triggerEvent('exit');
+      this.triggerEvent("exit");
     },
     onProfileTap() {
-      this.triggerEvent('profiletoggle');
+      this.triggerEvent("profiletoggle");
     },
   },
 });

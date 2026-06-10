@@ -2,6 +2,11 @@
   "component": true,
   "usingComponents": {
     "thinking-process": "/components/thinking-process/thinking-process",
-    "question-renderer": "/components/question-renderer/question-renderer"
+    "question-renderer": "/components/question-renderer/question-renderer",
+    "media-prompt-block": "/components/media-prompt-block/media-prompt-block",
+    "media-option-asset": "/components/media-option-asset/media-option-asset",
+    "speech-response-placeholder": "/components/speech-response-placeholder/speech-response-placeholder",
+    "handwriting-response-placeholder": "/components/handwriting-response-placeholder/handwriting-response-placeholder",
+    "upload-response-placeholder": "/components/upload-response-placeholder/upload-response-placeholder"
   }
 }

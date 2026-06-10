@@ -83,10 +83,18 @@
   transition: width 0.3s;
 }
 
-.skill-blue { background: #3b82f6; }
-.skill-purple { background: #a855f7; }
-.skill-green { background: #22c55e; }
-.skill-orange { background: #f97316; }
+.skill-blue {
+  background: #3b82f6;
+}
+.skill-purple {
+  background: #a855f7;
+}
+.skill-green {
+  background: #22c55e;
+}
+.skill-orange {
+  background: #f97316;
+}
 
 .tags-section {
   margin-bottom: 16rpx;

@@ -1,4 +1,6 @@
 {
   "component": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "media-option-asset": "/components/media-option-asset/media-option-asset"
+  }
 }

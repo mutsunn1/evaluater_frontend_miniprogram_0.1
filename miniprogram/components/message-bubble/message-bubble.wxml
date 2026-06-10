@@ -23,24 +23,50 @@
     </view>
 
     <!-- Single question: unified renderer -->
-    <question-renderer
-      wx:if="{{message.role === 'question' && message.item_data}}"
-      itemData="{{message.item_data}}"
-      bind:answer="onSingleAnswer"
-    />
+    <view wx:if="{{message.role === 'question' && message.item_data}}" class="single-question">
+      <view wx:for="{{message.item_data.media}}" wx:key="id" wx:if="{{item.role === 'prompt'}}">
+        <media-prompt-block asset="{{item}}" />
+      </view>
+      <question-renderer
+        itemData="{{message.item_data}}"
+        bind:answer="onSingleAnswer"
+      />
+    </view>
 
     <!-- Batch questions: unified renderer per question -->
     <view wx:if="{{message.role === 'question' && message.batch_questions && message.batch_questions.length}}" class="batch-questions">
-      <view wx:for="{{message.batch_questions}}" wx:key="batch_index" class="batch-item">
+      <view wx:for="{{message.batch_questions}}" wx:for-item="q" wx:for-index="qi" wx:key="batch_index" class="batch-item">
         <view class="batch-q-header">
-          <text class="batch-q-num">{{item.batch_index !== undefined ? item.batch_index + 1 : index + 1}}.</text>
-          <text class="batch-q-type" wx:if="{{item.skill_dimension}}">{{item.skill_dimension}}</text>
+          <text class="batch-q-num">{{q.batch_index !== undefined ? q.batch_index + 1 : qi + 1}}.</text>
+          <text class="batch-q-type" wx:if="{{q.skill_dimension}}">{{q.skill_dimension}}</text>
         </view>
-        <question-renderer
-          itemData="{{item}}"
-          data-qidx="{{item.batch_index !== undefined ? item.batch_index : index}}"
-          bind:answer="onBatchQuestionAnswer"
-        />
+
+        <!-- Prompt media for this batch item -->
+        <view wx:for="{{q.media}}" wx:for-item="m" wx:key="id" wx:if="{{m.role === 'prompt'}}">
+          <media-prompt-block asset="{{m}}" />
+        </view>
+
+        <!-- Response dispatch by mode -->
+        <block wx:if="{{itemModes[qi] === 'choice'}}">
+          <question-renderer
+            itemData="{{q}}"
+            data-qidx="{{qi}}"
+            bind:answer="onBatchQuestionAnswer"
+          />
+        </block>
+
+        <block wx:elif="{{itemModes[qi] === 'text'}}">
+          <question-renderer
+            itemData="{{q}}"
+            data-qidx="{{qi}}"
+            bind:answer="onBatchQuestionAnswer"
+          />
+        </block>
+
+        <speech-response-placeholder wx:elif="{{itemModes[qi] === 'speech'}}" />
+        <handwriting-response-placeholder wx:elif="{{itemModes[qi] === 'handwriting'}}" />
+        <upload-response-placeholder wx:elif="{{itemModes[qi] === 'upload'}}" />
+        <text wx:else class="qr-fallback">未知响应模式: {{itemModes[qi]}}</text>
       </view>
 
       <button class="batch-submit" disabled="{{!canBatchSubmit}}" bind:tap="onBatchSubmit">

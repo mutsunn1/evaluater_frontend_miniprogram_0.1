@@ -1,0 +1,8 @@
+.moa-img {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 8rpx;
+}
+.moa-audio-icon {
+  font-size: 40rpx;
+}

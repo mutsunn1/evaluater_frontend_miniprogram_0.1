@@ -13,12 +13,19 @@ const BUSINESS_BAR_HEIGHT = 64;
 const CAPSULE_BOTTOM_GAP = 8;
 
 export function getNavLayout(): NavLayout {
-  const wx = (globalThis as Record<string, unknown>).wx as {
-    getSystemInfoSync: () => { statusBarHeight: number };
-    getMenuButtonBoundingClientRect: () => {
-      top: number; height: number; width: number; left: number; bottom: number; right: number;
-    };
-  } | undefined;
+  const wx = (globalThis as Record<string, unknown>).wx as
+    | {
+        getSystemInfoSync: () => { statusBarHeight: number };
+        getMenuButtonBoundingClientRect: () => {
+          top: number;
+          height: number;
+          width: number;
+          left: number;
+          bottom: number;
+          right: number;
+        };
+      }
+    | undefined;
 
   if (!wx) {
     // Fallback for non-WeChat environments (tests, SSR)

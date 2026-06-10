@@ -1,0 +1,14 @@
+.srp {
+  padding: 16rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8rpx;
+}
+.srp-btn {
+  font-size: 28rpx;
+}
+.srp-hint {
+  font-size: 22rpx;
+  color: #999;
+}

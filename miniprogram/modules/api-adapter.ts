@@ -1,8 +1,13 @@
-import { startSseRequest } from './sse-parser';
-import { toThinkingSteps } from './session-utils';
-import type { ItemData, ThinkingStep, ConfidenceStats, UserProfileData } from '../types';
+import { startSseRequest } from "./sse-parser";
+import { toThinkingSteps } from "./session-utils";
+import type {
+  ItemData,
+  ThinkingStep,
+  ConfidenceStats,
+  UserProfileData,
+} from "../types";
 
-const BASE_URL = 'https://evalapi.mutsum1.xyz';
+const BASE_URL = "https://evalapi.mutsum1.xyz";
 
 // ---- wx.request Promise wrapper for non-streaming calls ----
 
@@ -12,18 +17,20 @@ function request<T>(opts: {
   data?: unknown;
 }): Promise<T> {
   return new Promise((resolve, reject) => {
-    const wx = (globalThis as Record<string, unknown>).wx as {
-      request: (o: Record<string, unknown>) => { abort(): void };
-    } | undefined;
+    const wx = (globalThis as Record<string, unknown>).wx as
+      | {
+          request: (o: Record<string, unknown>) => { abort(): void };
+        }
+      | undefined;
     if (!wx?.request) {
-      reject(new Error('wx.request is not available'));
+      reject(new Error("wx.request is not available"));
       return;
     }
     wx.request({
       url: opts.url,
-      method: opts.method || 'GET',
+      method: opts.method || "GET",
       data: opts.data,
-      header: { 'Content-Type': 'application/json' },
+      header: { "Content-Type": "application/json" },
       success(res: { statusCode: number; data: T }) {
         if (res.statusCode >= 400) {
           reject(new Error(`Request failed with status ${res.statusCode}`));
@@ -32,7 +39,7 @@ function request<T>(opts: {
         }
       },
       fail(err: { errMsg: string }) {
-        reject(new Error(err.errMsg || 'request failed'));
+        reject(new Error(err.errMsg || "request failed"));
       },
     });
   });
@@ -41,20 +48,24 @@ function request<T>(opts: {
 // ---- Non-streaming API functions ----
 
 export function createSession(userId: string): Promise<{
-  session_id: string; user_id: string; hsk_level: number; needs_cold_start?: boolean;
+  session_id: string;
+  user_id: string;
+  hsk_level: number;
+  needs_cold_start?: boolean;
 }> {
   return request({
     url: `${BASE_URL}/api/v1/sessions?user_id=${encodeURIComponent(userId)}`,
-    method: 'POST',
+    method: "POST",
   });
 }
 
 export function endSession(sessionId: string): Promise<{
-  session_id: string; summary: Record<string, unknown>;
+  session_id: string;
+  summary: Record<string, unknown>;
 }> {
   return request({
     url: `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/end`,
-    method: 'POST',
+    method: "POST",
   });
 }
 
@@ -83,11 +94,11 @@ function streamRequest<T>(
   body: unknown | undefined,
   onThinking: (step: ThinkingStep) => void,
   resolveOn: string,
-  opts?: StreamOpts,
+  opts?: StreamOpts
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     if (opts?.signal?.aborted) {
-      reject(new Error('Request aborted'));
+      reject(new Error("Request aborted"));
       return;
     }
 
@@ -99,16 +110,16 @@ function streamRequest<T>(
         url,
         method,
         data: body,
-        header: { 'Content-Type': 'application/json' },
+        header: { "Content-Type": "application/json" },
       },
       {
         signal: opts?.signal,
         onEvent(eventType, data) {
-          if (eventType === 'thinking') {
+          if (eventType === "thinking") {
             rawSteps.push({
-              agent: (data.agent as string) || '',
-              label: (data.label as string) || '',
-              output: (data.output as string) || '',
+              agent: (data.agent as string) || "",
+              label: (data.label as string) || "",
+              output: (data.output as string) || "",
             });
             const steps = toThinkingSteps(rawSteps);
             if (steps.length > 0) {
@@ -118,9 +129,13 @@ function streamRequest<T>(
             resolved = true;
             resolve(data as unknown as T);
             return false;
-          } else if (eventType === 'error') {
+          } else if (eventType === "error") {
             resolved = true;
-            reject(new Error((data.message as string) || 'Stream error'));
+            const msg =
+              (data.error as string) ||
+              (data.message as string) ||
+              "Stream error";
+            reject(new Error(msg));
             return false;
           }
           return;
@@ -130,10 +145,14 @@ function streamRequest<T>(
             resolved = true;
             reject(err);
           } else if (!resolved) {
-            reject(new Error('Stream ended without expected event'));
+            reject(
+              new Error(
+                "Stream ended without expected event — the server closed the connection before sending the expected data. Please retry."
+              )
+            );
           }
         },
-      },
+      }
     );
   });
 }
@@ -144,9 +163,9 @@ function streamRequest<T>(
 export function streamQuestion(
   sessionId: string,
   onThinking: (step: ThinkingStep) => void,
-  opts?: StreamOpts,
+  opts?: StreamOpts
 ): Promise<{ questions: ItemData[]; batch_id: string }> {
-  const requestId = opts?.requestId || '';
+  const requestId = opts?.requestId || "";
   let url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/question`;
   if (requestId) {
     url += `?request_id=${encodeURIComponent(requestId)}`;
@@ -154,43 +173,50 @@ export function streamQuestion(
 
   return new Promise((resolve, reject) => {
     if (opts?.signal?.aborted) {
-      reject(new Error('Request aborted'));
+      reject(new Error("Request aborted"));
       return;
     }
 
     const questions: ItemData[] = [];
-    let batchId = '';
+    let batchId = "";
     const rawSteps: { agent: string; label: string; output: string }[] = [];
     let resolved = false;
 
     startSseRequest(
-      { url, method: 'GET', header: { 'Content-Type': 'application/json' } },
+      { url, method: "GET", header: { "Content-Type": "application/json" } },
       {
         signal: opts?.signal,
         onEvent(eventType, data) {
-          if (eventType === 'thinking') {
+          if (eventType === "thinking") {
             rawSteps.push({
-              agent: (data.agent as string) || '',
-              label: (data.label as string) || '',
-              output: (data.output as string) || '',
+              agent: (data.agent as string) || "",
+              label: (data.label as string) || "",
+              output: (data.output as string) || "",
             });
             const steps = toThinkingSteps(rawSteps);
             if (steps.length > 0) {
               onThinking(steps[steps.length - 1]);
             }
-          } else if (eventType === 'question') {
+          } else if (eventType === "question") {
             const qData = (data.question as Record<string, unknown>) || {};
             questions.push({
               ...qData,
               batch_id: data.batch_id as string,
               batch_index: data.batch_index as number,
               batch_total: data.batch_total as number,
-              skill_dimension: data.skill_dimension as 'vocabulary' | 'grammar' | 'reading',
+              skill_dimension: data.skill_dimension as
+                | "vocabulary"
+                | "grammar"
+                | "reading",
             } as ItemData);
             batchId = (data.batch_id as string) || batchId;
-          } else if (eventType === 'error') {
+          } else if (eventType === "error") {
             resolved = true;
-            reject(new Error((data.message as string) || 'Stream error'));
+            const msg =
+              (data.error as string) ||
+              (data.message as string) ||
+              "Stream error";
+            reject(new Error(msg));
             return false;
           }
           return;
@@ -201,14 +227,18 @@ export function streamQuestion(
             reject(err);
           } else if (!resolved) {
             if (questions.length === 0) {
-              reject(new Error('Stream ended without question data'));
+              reject(
+                new Error(
+                  "Stream ended without question data — the backend question generator may have failed. Please retry."
+                )
+              );
             } else {
               resolved = true;
               resolve({ questions, batch_id: batchId });
             }
           }
         },
-      },
+      }
     );
   });
 }
@@ -217,42 +247,50 @@ export function streamSubmitAnswer(
   sessionId: string,
   answer: string,
   onThinking: (step: ThinkingStep) => void,
-  opts?: StreamOpts,
+  opts?: StreamOpts
 ): Promise<{
-  item_id: number; is_correct: boolean; feedback: string;
-  confidence: number; accuracy: number; auto_stop?: boolean; stop_reason?: string;
+  item_id: number;
+  is_correct: boolean;
+  feedback: string;
+  confidence: number;
+  accuracy: number;
+  auto_stop?: boolean;
+  stop_reason?: string;
 }> {
   const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/stream_answer`;
-  return streamRequest(url, 'POST', { answer }, onThinking, 'answer', opts);
+  return streamRequest(url, "POST", { answer }, onThinking, "answer", opts);
 }
 
 export function batchSubmitAnswer(
   sessionId: string,
   answers: Array<{ question_index: number; answer: string }>,
   onThinking: (step: ThinkingStep) => void,
-  opts?: StreamOpts & { submissionId?: string },
+  opts?: StreamOpts & { submissionId?: string }
 ): Promise<{
-  results: Array<Record<string, unknown>>; confidence: number;
-  accuracy: number; auto_stop?: boolean; stop_reason?: string;
+  results: Array<Record<string, unknown>>;
+  confidence: number;
+  accuracy: number;
+  auto_stop?: boolean;
+  stop_reason?: string;
 }> {
   const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/batch_answer`;
   const body: Record<string, unknown> = { answers };
   if (opts?.submissionId) {
     body.submission_id = opts.submissionId;
   }
-  return streamRequest(url, 'POST', body, onThinking, 'answer', opts);
+  return streamRequest(url, "POST", body, onThinking, "answer", opts);
 }
 
 export function streamColdStart(
   sessionId: string,
   onThinking: (step: ThinkingStep) => void,
-  opts?: StreamOpts,
+  opts?: StreamOpts
 ): Promise<
-  { cold_start: boolean; round: number; label: string; question: string }
+  | { cold_start: boolean; round: number; label: string; question: string }
   | { cold_start_complete: boolean; initial_vector: unknown }
 > {
   const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/cold_start`;
-  return streamRequest(url, 'GET', undefined, onThinking, 'question', opts);
+  return streamRequest(url, "GET", undefined, onThinking, "question", opts);
 }
 
 export function streamColdStartAnswer(
@@ -260,11 +298,21 @@ export function streamColdStartAnswer(
   answer: string,
   responseTime: number,
   onThinking: (step: ThinkingStep) => void,
-  opts?: StreamOpts,
+  opts?: StreamOpts
 ): Promise<{
-  cold_start_complete: boolean; feedback: string;
-  observer_output: string; grade_output: string; initial_vector?: unknown;
+  cold_start_complete: boolean;
+  feedback: string;
+  observer_output: string;
+  grade_output: string;
+  initial_vector?: unknown;
 }> {
   const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/cold_start_answer`;
-  return streamRequest(url, 'POST', { answer, response_time: responseTime }, onThinking, 'answer', opts);
+  return streamRequest(
+    url,
+    "POST",
+    { answer, response_time: responseTime },
+    onThinking,
+    "answer",
+    opts
+  );
 }

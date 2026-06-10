@@ -31,8 +31,12 @@
   font-size: 44rpx;
 }
 
-.tf-btn.true .tf-icon { color: #22c55e; }
-.tf-btn.false .tf-icon { color: #dc2626; }
+.tf-btn.true .tf-icon {
+  color: #22c55e;
+}
+.tf-btn.false .tf-icon {
+  color: #dc2626;
+}
 
 .tf-label {
   font-size: 28rpx;

@@ -1,4 +1,4 @@
-import type { ThinkingStep } from '../../types';
+import type { ThinkingStep } from "../../types";
 
 Component({
   properties: {
@@ -11,7 +11,7 @@ Component({
 
   methods: {
     onClose() {
-      this.triggerEvent('close');
+      this.triggerEvent("close");
     },
   },
 });

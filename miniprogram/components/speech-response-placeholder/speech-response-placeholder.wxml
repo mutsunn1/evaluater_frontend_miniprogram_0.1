@@ -1,0 +1,5 @@
+<!-- Speech response placeholder — disabled button, phase 1 only -->
+<view class="srp">
+  <button class="srp-btn" disabled data-testid="speech-record-btn">🎤 语音作答</button>
+  <text class="srp-hint">暂不支持自动评分</text>
+</view>

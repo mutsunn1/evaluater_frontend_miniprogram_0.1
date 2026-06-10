@@ -6,17 +6,21 @@ Component({
   data: {
     blanks: [] as number[],
     answers: [] as string[],
-    singleAnswer: '',
+    singleAnswer: "",
     canSubmit: false,
   },
 
   observers: {
-    'blankCount': function (n: number) {
+    blankCount: function (n: number) {
       if (n > 1) {
         const blanks = Array.from({ length: n }, (_, i) => i);
-        this.setData({ blanks, answers: new Array(n).fill(''), canSubmit: false });
+        this.setData({
+          blanks,
+          answers: new Array(n).fill(""),
+          canSubmit: false,
+        });
       } else {
-        this.setData({ blanks: [], singleAnswer: '', canSubmit: false });
+        this.setData({ blanks: [], singleAnswer: "", canSubmit: false });
       }
     },
   },
@@ -26,7 +30,7 @@ Component({
       const idx = e.currentTarget.dataset.idx as number;
       const answers = [...this.data.answers];
       answers[idx] = e.detail.value;
-      const canSubmit = answers.every(a => a.trim().length > 0);
+      const canSubmit = answers.every((a) => a.trim().length > 0);
       this.setData({ answers, canSubmit });
     },
     onSingleInput(e: WechatMiniprogram.InputEvent) {
@@ -34,10 +38,11 @@ Component({
       this.setData({ singleAnswer: val, canSubmit: val.trim().length > 0 });
     },
     onConfirm() {
-      const answer = this.properties.blankCount > 1
-        ? this.data.answers.join(',')
-        : this.data.singleAnswer.trim();
-      this.triggerEvent('answer', { text: answer });
+      const answer =
+        this.properties.blankCount > 1
+          ? this.data.answers.join(",")
+          : this.data.singleAnswer.trim();
+      this.triggerEvent("answer", { text: answer });
     },
   },
 });

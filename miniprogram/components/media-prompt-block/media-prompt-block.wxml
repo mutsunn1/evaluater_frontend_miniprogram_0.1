@@ -1,0 +1,7 @@
+<!-- Prompt media renderer — image, audio, video with alt text -->
+<view class="mpb">
+  <image wx:if="{{isImage}}" class="mpb-img" src="{{asset.url}}" mode="widthFix" />
+  <audio wx:elif="{{isAudio}}" class="mpb-audio" src="{{asset.url}}" controls />
+  <video wx:elif="{{isVideo}}" class="mpb-video" src="{{asset.url}}" controls />
+  <text wx:if="{{hasAlt}}" class="mpb-alt">{{altText}}</text>
+</view>

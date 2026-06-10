@@ -1,9 +1,9 @@
-import type { ThinkingStep, ConfidenceStats, SessionResult } from '../types';
+import type { ThinkingStep, ConfidenceStats, SessionResult } from "../types";
 
 export function toThinkingSteps(
-  entries: { agent: string; label: string; output: string }[],
+  entries: { agent: string; label: string; output: string }[]
 ): ThinkingStep[] {
-  return entries.map(s => ({
+  return entries.map((s) => ({
     agent: s.label || s.agent,
     agent_key: s.agent,
     output: s.output,
@@ -12,7 +12,7 @@ export function toThinkingSteps(
 
 export function buildSessionResult(
   summary: Record<string, unknown> | undefined,
-  confidence: ConfidenceStats,
+  confidence: ConfidenceStats
 ): SessionResult {
   return {
     total_items: (summary?.total_items as number) ?? confidence.sample_size,
@@ -23,17 +23,24 @@ export function buildSessionResult(
     notable_sentences: (summary?.notable_sentences as string[]) ?? [],
     stubborn_errors: (summary?.stubborn_errors as string[]) ?? [],
     interest_areas: (summary?.interest_areas as string[]) ?? [],
-    hsk_adjustment: (summary?.hsk_adjustment as string) ?? '',
-    summary: (summary?.summary as string) ?? '',
+    hsk_adjustment: (summary?.hsk_adjustment as string) ?? "",
+    summary: (summary?.summary as string) ?? "",
   };
 }
 
 export function createDefaultConfidence(): ConfidenceStats {
   return {
-    accuracy: 0, ci_lower: 0, ci_upper: 0,
-    confidence: 0, sample_size: 0,
-    should_stop: false, stop_reason: '', remaining: 18,
-    total_rounds: 0, min_rounds: 8, max_rounds: 18,
+    accuracy: 0,
+    ci_lower: 0,
+    ci_upper: 0,
+    confidence: 0,
+    sample_size: 0,
+    should_stop: false,
+    stop_reason: "",
+    remaining: 18,
+    total_rounds: 0,
+    min_rounds: 8,
+    max_rounds: 18,
     dimension_rounds: { vocabulary: 0, grammar: 0, reading: 0 },
   };
 }

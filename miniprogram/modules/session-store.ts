@@ -1,4 +1,4 @@
-import type { ChatMessage, ItemData, SessionResult } from '../types';
+import type { ChatMessage, ItemData, SessionResult } from "../types";
 
 export interface SessionState {
   sessionId: string | null;
@@ -7,7 +7,7 @@ export interface SessionState {
   currentQuestionIndex: number;
   isWaitingAnswer: boolean;
   isLoading: boolean;
-  loadingPhase: 'generating' | 'judging' | 'cold_start';
+  loadingPhase: "generating" | "judging" | "cold_start";
   sessionResult: SessionResult | null;
   error: string | null;
   isColdStart: boolean;
@@ -24,7 +24,7 @@ function createDefaultState(): SessionState {
     currentQuestionIndex: 0,
     isWaitingAnswer: false,
     isLoading: false,
-    loadingPhase: 'generating',
+    loadingPhase: "generating",
     sessionResult: null,
     error: null,
     isColdStart: false,
@@ -35,7 +35,11 @@ let _state: SessionState = createDefaultState();
 
 function notify() {
   for (const fn of listeners) {
-    try { fn(); } catch { /* don't let one broken listener break others */ }
+    try {
+      fn();
+    } catch {
+      /* don't let one broken listener break others */
+    }
   }
 }
 
@@ -45,7 +49,9 @@ export function getState(): Readonly<SessionState> {
 
 export function subscribe(fn: Listener): () => void {
   listeners.add(fn);
-  return () => { listeners.delete(fn); };
+  return () => {
+    listeners.delete(fn);
+  };
 }
 
 export function setSessionId(id: string | null): void {
@@ -64,7 +70,10 @@ export function setQuestions(questions: ItemData[]): void {
   notify();
 }
 
-export function setLoading(loading: boolean, phase?: SessionState['loadingPhase']): void {
+export function setLoading(
+  loading: boolean,
+  phase?: SessionState["loadingPhase"]
+): void {
   _state.isLoading = loading;
   if (phase) _state.loadingPhase = phase;
   notify();

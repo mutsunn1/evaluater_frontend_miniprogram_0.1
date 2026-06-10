@@ -1,0 +1,8 @@
+<!-- Handwriting response placeholder — canvas area marker, phase 1 only -->
+<view class="hrp" data-hanzi-writer-target="true" data-testid="handwriting-canvas">
+  <view class="hrp-canvas">
+    <text class="hrp-icon">✍️</text>
+    <text class="hrp-label">手写作答</text>
+  </view>
+  <text class="hrp-hint">暂不支持自动评分</text>
+</view>

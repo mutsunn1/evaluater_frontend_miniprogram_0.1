@@ -1,5 +1,5 @@
-import { selectVisibleThinkingSteps } from '../../modules/thinking';
-import type { ThinkingStep } from '../../types';
+import { selectVisibleThinkingSteps } from "../../modules/thinking";
+import type { ThinkingStep } from "../../types";
 
 interface VisibleStep extends ThinkingStep {
   preview: string;
@@ -24,18 +24,21 @@ Component({
   },
 
   observers: {
-    'steps': function (steps: ThinkingStep[]) {
+    steps: function (steps: ThinkingStep[]) {
       if (!steps || !steps.length) {
         this.setData({ visibleSteps: [], allCount: 0 });
         return;
       }
       const all = steps.map((s, i) => ({
         ...s,
-        preview: (s.output || '').slice(0, 60),
+        preview: (s.output || "").slice(0, 60),
         _origIndex: i,
       }));
 
-      const picked = selectVisibleThinkingSteps(all, this.properties.limit) as VisibleStep[];
+      const picked = selectVisibleThinkingSteps(
+        all,
+        this.properties.limit
+      ) as VisibleStep[];
       this.setData({ visibleSteps: picked, allCount: all.length });
     },
   },
@@ -43,13 +46,13 @@ Component({
   methods: {
     onTapStep(e: WechatMiniprogram.TouchEvent) {
       const idx = e.currentTarget.dataset.index as number;
-      const step = this.data.visibleSteps.find(s => s._origIndex === idx);
+      const step = this.data.visibleSteps.find((s) => s._origIndex === idx);
       if (step) {
-        this.triggerEvent('open', { steps: [step], index: idx });
+        this.triggerEvent("open", { steps: [step], index: idx });
       }
     },
     onExpandAll() {
-      this.triggerEvent('open', { steps: this.properties.steps, index: 0 });
+      this.triggerEvent("open", { steps: this.properties.steps, index: 0 });
     },
   },
 });

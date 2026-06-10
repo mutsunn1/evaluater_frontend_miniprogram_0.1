@@ -4,7 +4,7 @@ export interface Utf8Decoder {
 }
 
 function createTextDecoder(): Utf8Decoder {
-  const td = new TextDecoder('utf-8', { fatal: false });
+  const td = new TextDecoder("utf-8", { fatal: false });
   return {
     decode(chunk: Uint8Array): string {
       return td.decode(chunk, { stream: true });
@@ -18,7 +18,10 @@ function createTextDecoder(): Utf8Decoder {
 function createFallbackDecoder(): Utf8Decoder {
   let residual = new Uint8Array(0);
 
-  function decodeChunk(data: Uint8Array): { text: string; remainder: Uint8Array } {
+  function decodeChunk(data: Uint8Array): {
+    text: string;
+    remainder: Uint8Array;
+  } {
     // Prepend residual bytes from previous chunk
     const bytes = new Uint8Array(residual.length + data.length);
     bytes.set(residual, 0);
@@ -73,9 +76,16 @@ function createFallbackDecoder(): Utf8Decoder {
       } else if (seqLen === 2) {
         cp = ((b & 0x1f) << 6) | (bytes[i + 1] & 0x3f);
       } else if (seqLen === 3) {
-        cp = ((b & 0x0f) << 12) | ((bytes[i + 1] & 0x3f) << 6) | (bytes[i + 2] & 0x3f);
+        cp =
+          ((b & 0x0f) << 12) |
+          ((bytes[i + 1] & 0x3f) << 6) |
+          (bytes[i + 2] & 0x3f);
       } else {
-        cp = ((b & 0x07) << 18) | ((bytes[i + 1] & 0x3f) << 12) | ((bytes[i + 2] & 0x3f) << 6) | (bytes[i + 3] & 0x3f);
+        cp =
+          ((b & 0x07) << 18) |
+          ((bytes[i + 1] & 0x3f) << 12) |
+          ((bytes[i + 2] & 0x3f) << 6) |
+          (bytes[i + 3] & 0x3f);
       }
 
       // Reject overlong encodings and surrogates
@@ -94,7 +104,7 @@ function createFallbackDecoder(): Utf8Decoder {
     }
 
     const remainder = bytes.slice(i);
-    return { text: chars.join(''), remainder };
+    return { text: chars.join(""), remainder };
   }
 
   return {
@@ -108,16 +118,16 @@ function createFallbackDecoder(): Utf8Decoder {
       // Any leftover incomplete bytes → replacement characters
       const rchars: string[] = [];
       for (let i = 0; i < remainder.length; i++) {
-        rchars.push('�');
+        rchars.push("�");
       }
       residual = new Uint8Array(0);
-      return text + rchars.join('');
+      return text + rchars.join("");
     },
   };
 }
 
 export function createUtf8Decoder(): Utf8Decoder {
-  if (typeof TextDecoder !== 'undefined') {
+  if (typeof TextDecoder !== "undefined") {
     try {
       return createTextDecoder();
     } catch {

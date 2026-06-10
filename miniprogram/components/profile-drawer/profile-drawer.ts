@@ -1,18 +1,21 @@
-import { getUserProfile } from '../../modules/api-adapter';
-import { buildProfileSkillRows, type ProfileSkillRow } from '../../modules/profile-metrics';
-import type { UserProfileData } from '../../types';
+import { getUserProfile } from "../../modules/api-adapter";
+import {
+  buildProfileSkillRows,
+  type ProfileSkillRow,
+} from "../../modules/profile-metrics";
+import type { UserProfileData } from "../../types";
 
 const POLL_INTERVAL = 30000;
 
 Component({
   properties: {
-    userId: { type: String, value: '' },
+    userId: { type: String, value: "" },
     open: { type: Boolean, value: false },
   },
 
   data: {
     profile: {
-      user_id: '',
+      user_id: "",
       hsk_level: 1,
       skill_levels: { hsk: 1, vocabulary: 1, grammar: 1, reading: 1 },
       native_language: null,
@@ -26,7 +29,7 @@ Component({
   },
 
   observers: {
-    'userId, open': function (uid: string, isOpen: boolean) {
+    "userId, open": function (uid: string, isOpen: boolean) {
       if (uid && isOpen) {
         this.startPolling();
       } else {
@@ -56,7 +59,9 @@ Component({
     },
 
     stopPolling() {
-      const timer = (this as Record<string, unknown>)._pollTimer as ReturnType<typeof setInterval> | null;
+      const timer = (this as Record<string, unknown>)._pollTimer as ReturnType<
+        typeof setInterval
+      > | null;
       if (timer) {
         clearInterval(timer);
         (this as Record<string, unknown>)._pollTimer = null;

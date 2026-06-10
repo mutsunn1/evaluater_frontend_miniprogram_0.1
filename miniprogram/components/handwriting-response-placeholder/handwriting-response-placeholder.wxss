@@ -1,0 +1,30 @@
+.hrp {
+  padding: 16rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8rpx;
+}
+.hrp-canvas {
+  width: 300rpx;
+  height: 160rpx;
+  border: 2rpx dashed #ccc;
+  border-radius: 12rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+}
+.hrp-icon {
+  font-size: 48rpx;
+}
+.hrp-label {
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 8rpx;
+}
+.hrp-hint {
+  font-size: 22rpx;
+  color: #999;
+}

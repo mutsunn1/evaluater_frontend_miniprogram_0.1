@@ -1,6 +1,6 @@
 Component({
   data: {
-    answer: '' as string,
+    answer: "" as string,
   },
 
   methods: {
@@ -9,7 +9,9 @@ Component({
       this.setData({ answer: val });
     },
     onConfirm() {
-      this.triggerEvent('answer', { text: this.data.answer === 'true' ? 'true' : 'false' });
+      this.triggerEvent("answer", {
+        text: this.data.answer === "true" ? "true" : "false",
+      });
     },
   },
 });

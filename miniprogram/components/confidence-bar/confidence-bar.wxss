@@ -33,9 +33,15 @@
   transition: width 0.4s ease;
 }
 
-.progress-yellow { background: #f59e0b; }
-.progress-green { background: #22c55e; }
-.progress-blue { background: #3b82f6; }
+.progress-yellow {
+  background: #f59e0b;
+}
+.progress-green {
+  background: #22c55e;
+}
+.progress-blue {
+  background: #3b82f6;
+}
 
 .progress-text {
   font-size: 24rpx;
@@ -59,9 +65,15 @@
   border-radius: 50%;
 }
 
-.dim-dot.vocab { background: #22c55e; }
-.dim-dot.grammar { background: #f59e0b; }
-.dim-dot.reading { background: #a855f7; }
+.dim-dot.vocab {
+  background: #22c55e;
+}
+.dim-dot.grammar {
+  background: #f59e0b;
+}
+.dim-dot.reading {
+  background: #a855f7;
+}
 
 .dim-num {
   font-size: 22rpx;
@@ -109,6 +121,11 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }

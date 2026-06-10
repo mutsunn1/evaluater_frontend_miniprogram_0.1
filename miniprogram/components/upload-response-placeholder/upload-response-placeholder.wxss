@@ -1,0 +1,14 @@
+.urp {
+  padding: 16rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8rpx;
+}
+.urp-btn {
+  font-size: 28rpx;
+}
+.urp-hint {
+  font-size: 22rpx;
+  color: #999;
+}

@@ -165,5 +165,7 @@
     width: 112rpx;
   }
 
-  .action-btn.exit { width: 88rpx; }
+  .action-btn.exit {
+    width: 88rpx;
+  }
 }

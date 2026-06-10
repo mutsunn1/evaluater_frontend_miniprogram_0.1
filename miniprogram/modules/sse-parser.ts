@@ -1,4 +1,4 @@
-import { createUtf8Decoder } from './utf8-decoder';
+import { createUtf8Decoder } from "./utf8-decoder";
 
 interface SseRequestOptions {
   url: string;
@@ -36,18 +36,20 @@ interface WxRequestOptions {
 declare function wxRequest(opts: WxRequestOptions): WxRequestTask;
 
 function wxRequestAdapter(opts: WxRequestOptions): WxRequestTask {
-  const wx = (globalThis as Record<string, unknown>).wx as {
-    request: (o: WxRequestOptions) => WxRequestTask;
-  } | undefined;
+  const wx = (globalThis as Record<string, unknown>).wx as
+    | {
+        request: (o: WxRequestOptions) => WxRequestTask;
+      }
+    | undefined;
   if (wx?.request) {
     return wx.request(opts);
   }
-  throw new Error('wx.request is not available');
+  throw new Error("wx.request is not available");
 }
 
 export function startSseRequest(
   options: SseRequestOptions,
-  config: SseConfig,
+  config: SseConfig
 ): SseRequestTask {
   const decoder = createUtf8Decoder();
   let aborted = false;
@@ -57,15 +59,15 @@ export function startSseRequest(
   const signal = config.signal;
 
   // SSE line parsing state
-  let buffer = '';
-  let eventType = 'message';
+  let buffer = "";
+  let eventType = "message";
   const dataLines: string[] = [];
   let firstChunk = true;
 
   function dispatch() {
     if (stopped || dataLines.length === 0) return;
 
-    const raw = dataLines.join('\n');
+    const raw = dataLines.join("\n");
     dataLines.length = 0;
 
     let parsed: Record<string, unknown>;
@@ -89,14 +91,14 @@ export function startSseRequest(
     }
     firstChunk = false;
 
-    if (line === '') {
+    if (line === "") {
       dispatch();
-      eventType = 'message';
-    } else if (line.startsWith('event: ')) {
+      eventType = "message";
+    } else if (line.startsWith("event: ")) {
       eventType = line.slice(7).trim();
-    } else if (line.startsWith('data: ')) {
+    } else if (line.startsWith("data: ")) {
       dataLines.push(line.slice(6));
-    } else if (line.startsWith('data:')) {
+    } else if (line.startsWith("data:")) {
       dataLines.push(line.slice(5));
     }
     // Comment lines (starting with ':') and unknown fields are silently ignored
@@ -106,8 +108,8 @@ export function startSseRequest(
     if (aborted || stopped) return;
     const text = decoder.decode(new Uint8Array(chunk));
     buffer += text;
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
+    const lines = buffer.split("\n");
+    buffer = lines.pop() || "";
     for (const line of lines) {
       processLine(line);
     }
@@ -118,11 +120,11 @@ export function startSseRequest(
     const remaining = decoder.flush();
     buffer += remaining;
     if (buffer.length > 0) {
-      const lines = buffer.split('\n');
+      const lines = buffer.split("\n");
       for (const line of lines) {
         processLine(line);
       }
-      buffer = '';
+      buffer = "";
     }
     // Final dispatch for any accumulated data
     dispatch();
@@ -136,11 +138,11 @@ export function startSseRequest(
 
   task = wxRequestAdapter({
     url: options.url,
-    method: options.method || 'GET',
+    method: options.method || "GET",
     data: options.data,
     header: options.header,
     enableChunked: true,
-    responseType: 'text',
+    responseType: "text",
     success(_res) {
       if (aborted) return;
       flushEnd();
@@ -148,7 +150,7 @@ export function startSseRequest(
     },
     fail(err) {
       if (aborted) return;
-      config.onComplete?.(new Error(err.errMsg || 'request failed'));
+      config.onComplete?.(new Error(err.errMsg || "request failed"));
     },
   });
 

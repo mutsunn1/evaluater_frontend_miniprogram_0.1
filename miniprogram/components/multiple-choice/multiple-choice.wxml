@@ -1,4 +1,15 @@
-<!-- Multiple choice / select — tappable options -->
+<!-- Multiple choice / select — tappable options with optional media thumbnails -->
+<wxs module="oa">
+  function getAsset(assets, idx) {
+    if (!assets || !assets.length) return null;
+    for (var i = 0; i < assets.length; i++) {
+      if (assets[i].index === idx && assets[i].asset) return assets[i].asset;
+    }
+    return null;
+  }
+  module.exports = { getAsset: getAsset };
+</wxs>
+
 <view class="mc">
   <view
     wx:for="{{options}}"
@@ -7,6 +18,7 @@
     bind:tap="onTap"
     data-idx="{{item.index}}"
   >
+    <media-option-asset wx:if="{{oa.getAsset(optionAssets, item.index)}}" asset="{{oa.getAsset(optionAssets, item.index)}}" />
     <view class="opt-letter">{{item.index}}</view>
     <text class="opt-text">{{item.text}}</text>
     <view class="opt-check" wx:if="{{selected[item.index]}}">✓</view>

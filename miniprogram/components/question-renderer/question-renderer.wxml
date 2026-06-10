@@ -14,6 +14,7 @@
   <multiple-choice
     wx:if="{{qType === 'multiple_choice' || qType === 'multiple_select'}}"
     options="{{options}}"
+    media="{{itemData.media}}"
     multiSelect="{{qType === 'multiple_select'}}"
     bind:answer="onAnswer"
   />

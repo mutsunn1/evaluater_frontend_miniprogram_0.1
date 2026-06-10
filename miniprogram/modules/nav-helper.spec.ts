@@ -1,12 +1,14 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 
-function mockWxApi(overrides?: Partial<{
-  statusBarHeight: number;
-  menuTop: number;
-  menuHeight: number;
-  menuWidth: number;
-  menuLeft: number;
-}>) {
+function mockWxApi(
+  overrides?: Partial<{
+    statusBarHeight: number;
+    menuTop: number;
+    menuHeight: number;
+    menuWidth: number;
+    menuLeft: number;
+  }>
+) {
   const defaults = {
     statusBarHeight: 44,
     menuTop: 52,
@@ -29,16 +31,16 @@ function mockWxApi(overrides?: Partial<{
   };
 }
 
-describe('nav-helper', () => {
+describe("nav-helper", () => {
   beforeEach(() => {
     delete (globalThis as Record<string, unknown>).wx;
   });
 
   async function getNavHelper() {
-    return await import('./nav-helper');
+    return await import("./nav-helper");
   }
 
-  it('getNavLayout returns all required fields with positive values', async () => {
+  it("getNavLayout returns all required fields with positive values", async () => {
     mockWxApi();
     const { getNavLayout } = await getNavHelper();
     const layout = getNavLayout();
@@ -51,18 +53,18 @@ describe('nav-helper', () => {
     expect(layout.capsuleBottom).toBeGreaterThan(0);
   });
 
-  it('totalHeight covers status bar + nav bar area', async () => {
+  it("totalHeight covers status bar + nav bar area", async () => {
     mockWxApi();
     const { getNavLayout } = await getNavHelper();
     const layout = getNavLayout();
 
     // totalHeight should be >= statusBarHeight + navBarHeight
     expect(layout.totalHeight).toBeGreaterThanOrEqual(
-      layout.statusBarHeight + layout.navBarHeight,
+      layout.statusBarHeight + layout.navBarHeight
     );
   });
 
-  it('navBarHeight is calculated from menu position', async () => {
+  it("navBarHeight is calculated from menu position", async () => {
     mockWxApi({ menuTop: 54, statusBarHeight: 44 });
     const { getNavLayout } = await getNavHelper();
     const layout = getNavLayout();
@@ -73,19 +75,27 @@ describe('nav-helper', () => {
     expect(layout.navBarHeight).toBeLessThanOrEqual(100); // sanity check
   });
 
-  it('places the business bar below the capsule area', async () => {
+  it("places the business bar below the capsule area", async () => {
     mockWxApi({ statusBarHeight: 44, menuTop: 52, menuHeight: 32 });
     const { getNavLayout } = await getNavHelper();
     const layout = getNavLayout();
 
     expect(layout.businessBarTop).toBeGreaterThanOrEqual(layout.capsuleBottom);
     expect(layout.businessBarHeight).toBeGreaterThan(0);
-    expect(layout.totalHeight).toBe(layout.businessBarTop + layout.businessBarHeight);
+    expect(layout.totalHeight).toBe(
+      layout.businessBarTop + layout.businessBarHeight
+    );
   });
 
-  it('handles different device sizes gracefully', async () => {
+  it("handles different device sizes gracefully", async () => {
     // Simulate a small device
-    mockWxApi({ statusBarHeight: 20, menuTop: 24, menuHeight: 24, menuWidth: 80, menuLeft: 270 });
+    mockWxApi({
+      statusBarHeight: 20,
+      menuTop: 24,
+      menuHeight: 24,
+      menuWidth: 80,
+      menuLeft: 270,
+    });
     const { getNavLayout } = await getNavHelper();
     const layout = getNavLayout();
 

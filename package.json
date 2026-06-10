@@ -4,14 +4,18 @@
   "description": "",
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
   "license": "",
   "devDependencies": {
     "@types/node": "^25.9.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
     "miniprogram-api-typings": "^2.8.3-1",
+    "prettier": "^3.8.4",
     "vitest": "^4.1.8"
   },
   "dependencies": {

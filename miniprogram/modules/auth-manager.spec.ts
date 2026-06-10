@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from "vitest";
 
 // We mock wx.storage APIs
 const storage = new Map<string, unknown>();
@@ -21,43 +21,44 @@ function clearWx() {
   delete (globalThis as Record<string, unknown>).wx;
 }
 
-describe('auth-manager', () => {
+describe("auth-manager", () => {
   beforeEach(() => {
     storage.clear();
   });
 
-  it('getUserId returns null when no stored ID', async () => {
+  it("getUserId returns null when no stored ID", async () => {
     mockWx();
-    const { getUserId } = await import('./auth-manager');
+    const { getUserId } = await import("./auth-manager");
     expect(getUserId()).toBeNull();
     clearWx();
   });
 
-  it('setUserId and getUserId round-trip', async () => {
+  it("setUserId and getUserId round-trip", async () => {
     mockWx();
-    const { setUserId, getUserId } = await import('./auth-manager');
-    setUserId('test-user-123');
-    expect(getUserId()).toBe('test-user-123');
+    const { setUserId, getUserId } = await import("./auth-manager");
+    setUserId("test-user-123");
+    expect(getUserId()).toBe("test-user-123");
     clearWx();
   });
 
-  it('clearUserId removes stored ID', async () => {
+  it("clearUserId removes stored ID", async () => {
     mockWx();
-    const { setUserId, clearUserId, getUserId } = await import('./auth-manager');
-    setUserId('test-user-123');
+    const { setUserId, clearUserId, getUserId } =
+      await import("./auth-manager");
+    setUserId("test-user-123");
     clearUserId();
     expect(getUserId()).toBeNull();
     clearWx();
   });
 
-  it('getUserId returns null when wx is unavailable', async () => {
+  it("getUserId returns null when wx is unavailable", async () => {
     // Don't set up wx
-    const { getUserId } = await import('./auth-manager');
+    const { getUserId } = await import("./auth-manager");
     expect(getUserId()).toBeNull();
   });
 
-  it('setUserId does not throw when wx is unavailable', async () => {
-    const { setUserId } = await import('./auth-manager');
-    expect(() => setUserId('test')).not.toThrow();
+  it("setUserId does not throw when wx is unavailable", async () => {
+    const { setUserId } = await import("./auth-manager");
+    expect(() => setUserId("test")).not.toThrow();
   });
 });
