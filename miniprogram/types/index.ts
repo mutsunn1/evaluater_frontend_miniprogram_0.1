@@ -6,6 +6,35 @@ export type QuestionType =
   | "reading_comprehension"
   | "unknown";
 
+export type ResponseMode =
+  | "choice"
+  | "text"
+  | "speech"
+  | "handwriting"
+  | "upload";
+
+export interface MediaAsset {
+  id: string;
+  type: "image" | "audio" | "video";
+  role: "prompt" | "option" | "reference";
+  source: "prepared" | "generated";
+  url: string;
+  mime_type?: string;
+  alt?: string;
+  descriptor?: string;
+  tags?: string[];
+  provider?: string;
+  license?: string;
+  attribution?: string;
+  project_url?: string;
+}
+
+export interface QuestionOption {
+  index: string;
+  text?: string;
+  media_id?: string;
+}
+
 export interface SubQuestion {
   sub_id: string;
   question_text: string;
@@ -14,11 +43,13 @@ export interface SubQuestion {
 
 export interface ItemData {
   question_type: QuestionType;
+  response_mode?: ResponseMode;
+  media?: MediaAsset[];
   scene: string;
   grammar_focus: string;
   target_level: string;
   question_text: string;
-  options?: { index: string; text: string }[];
+  options?: QuestionOption[];
   correct_answer?: string | string[] | boolean;
   reading_passage?: string;
   sub_questions?: SubQuestion[];

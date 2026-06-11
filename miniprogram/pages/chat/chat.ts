@@ -86,6 +86,12 @@ Page({
   _lastReqId: "",
   _csStart: 0,
   _tl: {} as Record<string, number>,
+  // This round's accumulated questions (filled incrementally by onQuestion callback)
+  _currentQuestions: [] as ItemData[],
+  // First question pushed timestamp (kept across stream-end alignment)
+  _qPushedAt: 0,
+  // The message id for the current batch question message (updated incrementally)
+  _qMsgId: "",
   _busy: false,
   _ended: false,
 
@@ -279,6 +285,11 @@ Page({
     const rid = reqId || createClientId();
     this._lastReqId = rid;
 
+    // Clear stale state from previous round
+    this._currentQuestions = [];
+    this._qPushedAt = 0;
+    this._qMsgId = "";
+
     setLoading(true, "generating");
     setError(null);
     this.setData({
@@ -287,26 +298,74 @@ Page({
       error: null,
     });
 
+    const _showQuestions = (questions: ItemData[]) => {
+      if (questions.length === 0) return;
+      if (!this._qMsgId) {
+        this._qMsgId = createClientId();
+        addMessage({
+          id: this._qMsgId,
+          role: "question",
+          content: `第 ${questions.length} 道题目`,
+          batch_questions: [...questions],
+          timestamp: new Date().toISOString(),
+          thinking_steps:
+            this.data.liveThinking.length > 0
+              ? [...this.data.liveThinking]
+              : undefined,
+        });
+      } else {
+        const s = getState();
+        const msg = s.messages.find((m) => m.id === this._qMsgId);
+        if (msg) {
+          msg.batch_questions = [...questions];
+          if (this.data.liveThinking.length > 0) {
+            msg.thinking_steps = [...this.data.liveThinking];
+          }
+        }
+      }
+      this._currentQuestions = [...questions];
+      setQuestions(questions);
+      setWaitingAnswer(true);
+      setLoading(false);
+      this._qPushedAt = this._qPushedAt || Date.now();
+      this.setData({
+        messages: getState().messages.slice(),
+        isWaitingAnswer: true,
+        isLoading: false,
+      });
+    };
+
     try {
       const r = await streamQuestion(sid, (s) => this.appendLiveThinking(s), {
         signal: this._abort,
         requestId: rid,
+        onQuestion: (q: ItemData) => {
+          this._currentQuestions.push(q);
+          _showQuestions(this._currentQuestions);
+        },
       });
 
-      const steps = this.data.liveThinking.slice();
-      addMessage({
-        id: createClientId(),
-        role: "question",
-        content: `第 ${(r.questions || []).length} 道题目`,
-        batch_questions: r.questions,
-        timestamp: new Date().toISOString(),
-        thinking_steps: steps.length > 0 ? steps : undefined,
-      });
-      setQuestions(r.questions);
-      setLoading(false);
-      setWaitingAnswer(true);
-      // Snapshot current questions for dimension counting on submit
-      (this.data as Record<string, unknown>)._currentQuestions = r.questions;
+      const questions = r.questions;
+
+      if (questions.length > 0) {
+        _showQuestions(questions);
+      } else {
+        setLoading(false);
+        addMessage({
+          id: createClientId(),
+          role: "question",
+          content: "题目生成异常",
+          timestamp: new Date().toISOString(),
+        });
+        setWaitingAnswer(false);
+        this.setData({
+          messages: getState().messages.slice(),
+          isLoading: false,
+          isWaitingAnswer: false,
+        });
+      }
+
+      this._qPushedAt = this._qPushedAt || Date.now();
       this.setData({ liveThinking: [] });
       this._busy = false;
     } catch (err) {
@@ -384,10 +443,7 @@ Page({
 
       // Accumulate dimension_rounds from the questions we generated
       const dimRounds = { ...this.data.confidence.dimension_rounds };
-      const currentQuestions =
-        ((this.data as Record<string, unknown>)
-          ._currentQuestions as ItemData[]) || [];
-      for (const q of currentQuestions) {
+      for (const q of this._currentQuestions) {
         const dim = q.skill_dimension;
         if (dim === "vocabulary" || dim === "grammar" || dim === "reading") {
           dimRounds[dim] += 1;
