@@ -7,14 +7,14 @@
     </view>
 
     <scroll-view class="drawer-body" scroll-y enhanced>
-      <view class="step-card" wx:for="{{steps}}" wx:key="agent_key">
+      <view class="step-card" wx:for="{{drawerSteps}}" wx:key="_key">
         <view class="step-head">
           <text class="step-bulb">💡</text>
           <text class="step-name">{{item.agent}}</text>
         </view>
         <text class="step-output">{{item.output}}</text>
       </view>
-      <view class="empty" wx:if="{{!steps.length}}">
+      <view class="empty" wx:if="{{!drawerSteps.length}}">
         <text>暂无思考过程</text>
       </view>
     </scroll-view>

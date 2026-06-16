@@ -15,7 +15,8 @@ const CAPSULE_BOTTOM_GAP = 8;
 export function getNavLayout(): NavLayout {
   const wx = (globalThis as Record<string, unknown>).wx as
     | {
-        getSystemInfoSync: () => { statusBarHeight: number };
+        getWindowInfo?: () => { statusBarHeight?: number };
+        getSystemInfoSync?: () => { statusBarHeight?: number };
         getMenuButtonBoundingClientRect: () => {
           top: number;
           height: number;
@@ -41,7 +42,10 @@ export function getNavLayout(): NavLayout {
     };
   }
 
-  const sys = wx.getSystemInfoSync();
+  const windowInfo = wx.getWindowInfo?.();
+  const fallbackInfo = windowInfo ? undefined : wx.getSystemInfoSync?.();
+  const statusBarHeight =
+    windowInfo?.statusBarHeight ?? fallbackInfo?.statusBarHeight ?? 0;
   const menu = wx.getMenuButtonBoundingClientRect();
 
   const navBarHeight = BUSINESS_BAR_HEIGHT;
@@ -49,7 +53,7 @@ export function getNavLayout(): NavLayout {
   const totalHeight = businessBarTop + navBarHeight;
 
   return {
-    statusBarHeight: sys.statusBarHeight,
+    statusBarHeight,
     navBarHeight,
     totalHeight,
     capsuleLeft: menu.left,

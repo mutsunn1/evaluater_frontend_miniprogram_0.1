@@ -4,7 +4,7 @@
   <view class="qr-meta" wx:if="{{scene || grammarFocus || targetLevel}}">
     <text class="meta-tag" wx:if="{{scene}}">场景: {{scene}}</text>
     <text class="meta-tag" wx:if="{{grammarFocus}}">语法: {{grammarFocus}}</text>
-    <text class="meta-tag" wx:if="{{targetLevel}}">HSK {{targetLevel}}</text>
+    <text class="meta-tag" wx:if="{{targetLevel}}">{{targetLevel}}</text>
   </view>
 
   <!-- Question text -->
@@ -14,7 +14,7 @@
   <multiple-choice
     wx:if="{{qType === 'multiple_choice' || qType === 'multiple_select'}}"
     options="{{options}}"
-    media="{{itemData.media}}"
+    media="{{media}}"
     multiSelect="{{qType === 'multiple_select'}}"
     bind:answer="onAnswer"
   />

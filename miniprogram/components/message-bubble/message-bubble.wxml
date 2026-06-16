@@ -69,7 +69,11 @@
         <text wx:else class="qr-fallback">未知响应模式: {{itemModes[qi]}}</text>
       </view>
 
-      <button class="batch-submit" disabled="{{!canBatchSubmit}}" bind:tap="onBatchSubmit">
+      <button
+        class="batch-submit {{!canBatchSubmit ? 'batch-submit-disabled' : ''}}"
+        disabled="{{!canBatchSubmit}}"
+        bind:tap="onBatchSubmit"
+      >
         提交全部答案
       </button>
     </view>

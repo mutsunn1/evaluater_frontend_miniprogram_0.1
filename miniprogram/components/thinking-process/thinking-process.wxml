@@ -2,7 +2,7 @@
 <view class="thinking-inline" wx:if="{{visibleSteps.length}}">
   <view
     wx:for="{{visibleSteps}}"
-    wx:key="agent_key"
+    wx:key="_key"
     class="step-summary"
     bind:tap="onTapStep"
     data-index="{{item._origIndex}}"

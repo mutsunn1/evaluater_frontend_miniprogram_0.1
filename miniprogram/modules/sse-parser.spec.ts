@@ -94,6 +94,28 @@ describe("startSseRequest", () => {
     expect(onEvent).toHaveBeenCalledWith("question", { x: 1 });
   });
 
+  it("sets an explicit long timeout for long-running generation streams", async () => {
+    const { startSseRequest } = await importParser();
+
+    const p = new Promise<void>((resolve) => {
+      setupMock(toArrayBuffer(['data: {"ok": true}\n\n']));
+      startSseRequest(
+        { url: "https://example.com/sse" },
+        {
+          onEvent: vi.fn(),
+          onComplete: () => resolve(),
+        }
+      );
+    });
+
+    await p;
+    expect(mockWx.request).toHaveBeenCalledWith(
+      expect.objectContaining({ timeout: expect.any(Number) })
+    );
+    const opts = (mockWx.request as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(opts.timeout).toBeGreaterThanOrEqual(180000);
+  });
+
   it("dispatches event split across two chunks", async () => {
     const { startSseRequest } = await importParser();
     const onEvent = vi.fn();

@@ -27,8 +27,16 @@ Page({
   },
 
   onLoad() {
-    const sys = wx.getSystemInfoSync();
-    this.setData({ statusBarHeight: sys.statusBarHeight });
+    const wxApi = wx as unknown as {
+      getWindowInfo?: () => { statusBarHeight?: number };
+      getSystemInfoSync?: () => { statusBarHeight?: number };
+    };
+    const windowInfo = wxApi.getWindowInfo?.();
+    const fallbackInfo = windowInfo ? undefined : wxApi.getSystemInfoSync?.();
+    this.setData({
+      statusBarHeight:
+        windowInfo?.statusBarHeight ?? fallbackInfo?.statusBarHeight ?? 0,
+    });
 
     const s = getState();
     if (s.sessionResult) {

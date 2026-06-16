@@ -102,6 +102,28 @@ describe("resolveResponseMode", () => {
       )
     ).toBe("text");
   });
+
+  it('legacy backend response_mode alias "single" is treated as choice', () => {
+    expect(
+      resolveResponseMode(
+        makeItem({
+          question_type: "multiple_choice",
+          response_mode: "single" as ItemData["response_mode"],
+        })
+      )
+    ).toBe("choice");
+  });
+
+  it("invalid response_mode falls back to question_type inference", () => {
+    expect(
+      resolveResponseMode(
+        makeItem({
+          question_type: "fill_in_blank",
+          response_mode: "essay" as ItemData["response_mode"],
+        })
+      )
+    ).toBe("text");
+  });
 });
 
 // ================================================================

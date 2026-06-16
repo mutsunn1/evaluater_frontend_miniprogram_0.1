@@ -134,7 +134,7 @@
   border: none;
 }
 
-.batch-submit[disabled] {
+.batch-submit-disabled {
   background: #93c5fd;
   color: rgba(255, 255, 255, 0.7);
 }

@@ -1,8 +1,15 @@
-import type { ItemData, SubQuestion } from "../../types";
+import type { ItemData, MediaAsset, SubQuestion } from "../../types";
 
 interface Option {
   index: string;
-  text: string;
+  text?: string;
+  media_id?: string;
+}
+
+function formatTargetLevel(value: string | undefined): string {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  return /^HSK/i.test(text) ? text : `HSK ${text}`;
 }
 
 function derive(itemData: ItemData) {
@@ -10,9 +17,12 @@ function derive(itemData: ItemData) {
     qType: itemData.question_type || "unknown",
     scene: itemData.scene || "",
     grammarFocus: itemData.grammar_focus || "",
-    targetLevel: itemData.target_level || "",
+    targetLevel: formatTargetLevel(itemData.target_level),
     questionText: itemData.question_text || "",
     options: (itemData.options || []) as Option[],
+    media: Array.isArray(itemData.media)
+      ? (itemData.media as MediaAsset[])
+      : ([] as MediaAsset[]),
     blankCount: itemData.blank_count || 1,
     readingPassage: itemData.reading_passage || "",
     subQuestions: (itemData.sub_questions || []) as SubQuestion[],
@@ -30,6 +40,7 @@ Component({
         target_level: "",
         question_text: "",
         options: [],
+        media: [],
         reading_passage: "",
         sub_questions: [],
         blank_count: 0,
@@ -44,6 +55,7 @@ Component({
     target_level: "",
     question_text: "",
     options: [],
+    media: [],
     reading_passage: "",
     sub_questions: [],
     blank_count: 0,

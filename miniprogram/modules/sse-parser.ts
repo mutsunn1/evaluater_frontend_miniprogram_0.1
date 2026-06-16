@@ -29,11 +29,14 @@ interface WxRequestOptions {
   header?: Record<string, string>;
   enableChunked?: boolean;
   responseType?: string;
+  timeout?: number;
   success?: (res: { statusCode: number; data: unknown }) => void;
   fail?: (err: { errMsg: string }) => void;
 }
 
 declare function wxRequest(opts: WxRequestOptions): WxRequestTask;
+
+const STREAM_TIMEOUT_MS = 5 * 60 * 1000;
 
 function wxRequestAdapter(opts: WxRequestOptions): WxRequestTask {
   const wx = (globalThis as Record<string, unknown>).wx as
@@ -143,6 +146,7 @@ export function startSseRequest(
     header: options.header,
     enableChunked: true,
     responseType: "text",
+    timeout: STREAM_TIMEOUT_MS,
     success(_res) {
       if (aborted) return;
       flushEnd();

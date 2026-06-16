@@ -4,6 +4,7 @@ import type { ThinkingStep } from "../../types";
 interface VisibleStep extends ThinkingStep {
   preview: string;
   _origIndex: number;
+  _key: string;
 }
 
 Component({
@@ -33,6 +34,7 @@ Component({
         ...s,
         preview: (s.output || "").slice(0, 60),
         _origIndex: i,
+        _key: `${s.agent_key || s.agent || "step"}-${i}`,
       }));
 
       const picked = selectVisibleThinkingSteps(

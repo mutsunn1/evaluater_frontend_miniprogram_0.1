@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 function mockWxApi(
   overrides?: Partial<{
@@ -18,17 +18,28 @@ function mockWxApi(
   };
   const vals = { ...defaults, ...overrides };
 
+  const getWindowInfo = vi.fn(() => ({
+    statusBarHeight: vals.statusBarHeight,
+  }));
+  const getSystemInfoSync = vi.fn(() => ({
+    statusBarHeight: vals.statusBarHeight,
+  }));
+  const getMenuButtonBoundingClientRect = vi.fn(() => ({
+    top: vals.menuTop,
+    height: vals.menuHeight,
+    width: vals.menuWidth,
+    left: vals.menuLeft,
+    bottom: vals.menuTop + vals.menuHeight,
+    right: vals.menuLeft + vals.menuWidth,
+  }));
+
   (globalThis as Record<string, unknown>).wx = {
-    getSystemInfoSync: () => ({ statusBarHeight: vals.statusBarHeight }),
-    getMenuButtonBoundingClientRect: () => ({
-      top: vals.menuTop,
-      height: vals.menuHeight,
-      width: vals.menuWidth,
-      left: vals.menuLeft,
-      bottom: vals.menuTop + vals.menuHeight,
-      right: vals.menuLeft + vals.menuWidth,
-    }),
+    getWindowInfo,
+    getSystemInfoSync,
+    getMenuButtonBoundingClientRect,
   };
+
+  return { getWindowInfo, getSystemInfoSync, getMenuButtonBoundingClientRect };
 }
 
 describe("nav-helper", () => {
@@ -41,11 +52,13 @@ describe("nav-helper", () => {
   }
 
   it("getNavLayout returns all required fields with positive values", async () => {
-    mockWxApi();
+    const wxApi = mockWxApi();
     const { getNavLayout } = await getNavHelper();
     const layout = getNavLayout();
 
     expect(layout.statusBarHeight).toBe(44);
+    expect(wxApi.getWindowInfo).toHaveBeenCalledTimes(1);
+    expect(wxApi.getSystemInfoSync).not.toHaveBeenCalled();
     expect(layout.navBarHeight).toBeGreaterThan(0);
     expect(layout.totalHeight).toBeGreaterThan(layout.statusBarHeight);
     expect(layout.capsuleLeft).toBe(281);

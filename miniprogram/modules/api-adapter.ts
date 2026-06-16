@@ -5,6 +5,8 @@ import type {
   ThinkingStep,
   ConfidenceStats,
   UserProfileData,
+  QuestionOption,
+  MediaAsset,
 } from "../types";
 
 const BASE_URL = "https://evalapi.mutsum1.xyz";
@@ -86,6 +88,126 @@ export function getUserProfile(userId: string): Promise<UserProfileData> {
 interface StreamOpts {
   signal?: { aborted: boolean };
   requestId?: string;
+  onQuestion?: (question: ItemData) => void;
+}
+
+const OPTION_LABELS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+function normalizeQuestionType(
+  value: unknown,
+  question: Record<string, unknown>
+): ItemData["question_type"] {
+  const raw = String(value || "").trim();
+  if (raw === "single" || raw === "single_choice") return "multiple_choice";
+  if (raw === "multiple" || raw === "multi_choice") return "multiple_select";
+  if (raw === "judge" || raw === "true_or_false") return "true_false";
+  if (raw === "blank" || raw === "fill") return "fill_in_blank";
+  if (raw === "reading" || raw === "read") {
+    return Array.isArray(question.options) && question.options.length > 0
+      ? "multiple_choice"
+      : "reading_comprehension";
+  }
+  if (
+    raw === "multiple_choice" ||
+    raw === "multiple_select" ||
+    raw === "true_false" ||
+    raw === "fill_in_blank" ||
+    raw === "reading_comprehension"
+  ) {
+    return raw;
+  }
+  return "unknown";
+}
+
+function normalizeResponseMode(
+  value: unknown,
+  questionType: ItemData["question_type"]
+): ItemData["response_mode"] {
+  const raw = String(value || "").trim();
+  if (
+    raw === "choice" ||
+    raw === "text" ||
+    raw === "speech" ||
+    raw === "handwriting" ||
+    raw === "upload"
+  ) {
+    return raw;
+  }
+  if (
+    raw === "single" ||
+    raw === "multiple" ||
+    raw === "select" ||
+    raw === "multiple_choice" ||
+    raw === "multiple_select" ||
+    raw === "true_false"
+  ) {
+    return "choice";
+  }
+  if (
+    questionType === "multiple_choice" ||
+    questionType === "multiple_select" ||
+    questionType === "true_false"
+  ) {
+    return "choice";
+  }
+  return "text";
+}
+
+function normalizeOptions(value: unknown): QuestionOption[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((opt, i) => {
+    const fallbackIndex = OPTION_LABELS[i] || String(i + 1);
+    if (typeof opt === "string") {
+      return { index: fallbackIndex, text: opt };
+    }
+    const record = (opt || {}) as Record<string, unknown>;
+    return {
+      index: String(record.index || record.label || fallbackIndex),
+      text:
+        typeof record.text === "string"
+          ? record.text
+          : typeof record.content === "string"
+            ? record.content
+            : undefined,
+      media_id:
+        typeof record.media_id === "string" ? record.media_id : undefined,
+    };
+  });
+}
+
+function normalizeMedia(value: unknown): MediaAsset[] {
+  return Array.isArray(value) ? (value as MediaAsset[]) : [];
+}
+
+function normalizeStreamQuestion(
+  rawQuestion: Record<string, unknown>,
+  eventData: Record<string, unknown>
+): ItemData {
+  const questionType = normalizeQuestionType(
+    rawQuestion.question_type || rawQuestion.type,
+    rawQuestion
+  );
+  return {
+    ...rawQuestion,
+    question_type: questionType,
+    response_mode: normalizeResponseMode(
+      rawQuestion.response_mode,
+      questionType
+    ),
+    media: normalizeMedia(rawQuestion.media),
+    options: normalizeOptions(rawQuestion.options),
+    scene: String(rawQuestion.scene || ""),
+    grammar_focus: String(rawQuestion.grammar_focus || ""),
+    target_level: String(rawQuestion.target_level || ""),
+    question_text: String(rawQuestion.question_text || ""),
+    batch_id: eventData.batch_id as string,
+    batch_index: eventData.batch_index as number,
+    batch_total: eventData.batch_total as number,
+    skill_dimension: eventData.skill_dimension as
+      | "vocabulary"
+      | "grammar"
+      | "reading",
+  } as ItemData;
 }
 
 function streamRequest<T>(
@@ -199,16 +321,9 @@ export function streamQuestion(
             }
           } else if (eventType === "question") {
             const qData = (data.question as Record<string, unknown>) || {};
-            questions.push({
-              ...qData,
-              batch_id: data.batch_id as string,
-              batch_index: data.batch_index as number,
-              batch_total: data.batch_total as number,
-              skill_dimension: data.skill_dimension as
-                | "vocabulary"
-                | "grammar"
-                | "reading",
-            } as ItemData);
+            const question = normalizeStreamQuestion(qData, data);
+            questions.push(question);
+            opts?.onQuestion?.(question);
             batchId = (data.batch_id as string) || batchId;
           } else if (eventType === "error") {
             resolved = true;

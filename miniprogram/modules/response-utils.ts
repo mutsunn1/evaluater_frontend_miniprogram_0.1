@@ -1,5 +1,31 @@
 import type { BatchAnswerPayload, ItemData, ResponseMode } from "../types";
 
+const VALID_RESPONSE_MODES = new Set([
+  "choice",
+  "text",
+  "speech",
+  "handwriting",
+  "upload",
+]);
+
+const CHOICE_RESPONSE_ALIASES = new Set([
+  "single",
+  "multiple",
+  "select",
+  "multiple_choice",
+  "multiple_select",
+  "true_false",
+]);
+
+const TEXT_RESPONSE_ALIASES = new Set([
+  "blank",
+  "fill",
+  "fill_in_blank",
+  "reading",
+  "reading_comprehension",
+  "free_text",
+]);
+
 /**
  * Resolve the effective response mode for a question.
  *
@@ -12,7 +38,10 @@ import type { BatchAnswerPayload, ItemData, ResponseMode } from "../types";
  * would incorrectly fall into the text-input branch.
  */
 export function resolveResponseMode(q: ItemData): ResponseMode {
-  if (q.response_mode) return q.response_mode;
+  const explicit = String(q.response_mode || "").trim();
+  if (VALID_RESPONSE_MODES.has(explicit)) return explicit as ResponseMode;
+  if (CHOICE_RESPONSE_ALIASES.has(explicit)) return "choice";
+  if (TEXT_RESPONSE_ALIASES.has(explicit)) return "text";
 
   if (
     q.question_type === "multiple_choice" ||

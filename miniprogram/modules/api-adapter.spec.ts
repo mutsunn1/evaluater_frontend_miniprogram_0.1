@@ -184,6 +184,70 @@ describe("api-adapter — streaming", () => {
     expect(onThinking).toHaveBeenCalledTimes(1);
   });
 
+  it("streamQuestion normalizes legacy response mode aliases and missing media", async () => {
+    const onQuestion = vi.fn();
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            question_type: "multiple_choice",
+            response_mode: "single",
+            question_text: "Q1",
+            scene: "",
+            grammar_focus: "",
+            target_level: "",
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "grammar",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn(), { onQuestion });
+
+    expect(result.questions[0].response_mode).toBe("choice");
+    expect(result.questions[0].media).toEqual([]);
+    expect(onQuestion).toHaveBeenCalledWith(
+      expect.objectContaining({ response_mode: "choice", media: [] })
+    );
+  });
+
+  it('streamQuestion normalizes backend question_type "reading" with options to multiple_choice', async () => {
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            question_type: "reading",
+            response_mode: "choice",
+            question_text: "阅读材料\n\n问题：正确答案是什么？",
+            options: ["选项一", "选项二", "选项三", "选项四"],
+            scene: "学习",
+            grammar_focus: "学习",
+            target_level: "HSK5",
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "reading",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn());
+
+    expect(result.questions[0].question_type).toBe("multiple_choice");
+    expect(result.questions[0].options).toEqual([
+      { index: "A", text: "选项一" },
+      { index: "B", text: "选项二" },
+      { index: "C", text: "选项三" },
+      { index: "D", text: "选项四" },
+    ]);
+  });
+
   it("streamQuestion rejects when stream ends without question data", async () => {
     mockSseParser([
       { type: "thinking", data: { agent: "test", output: "just thinking..." } },
