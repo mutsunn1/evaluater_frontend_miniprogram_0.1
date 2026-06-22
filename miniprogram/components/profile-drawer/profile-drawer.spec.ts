@@ -27,5 +27,6 @@ describe("profile-drawer layout contract", () => {
     expect(wxss).toContain(".skill-purple");
     expect(wxss).toContain(".skill-green");
     expect(wxss).toContain(".skill-orange");
+    expect(wxss).toContain(".skill-cyan");
   });
 });

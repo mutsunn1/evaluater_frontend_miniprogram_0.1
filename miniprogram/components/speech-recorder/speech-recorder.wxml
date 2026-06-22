@@ -1,0 +1,49 @@
+<!-- Speech recorder — record, play, delete, upload, review transcript -->
+<view class="sp-rec">
+  <!-- Idle -->
+  <view wx:if="{{state === 'idle'}}" class="sp-idle">
+    <text class="sp-hint">录制你的口头回答（最长60秒）</text>
+    <button class="sp-record-btn" bind:tap="startRecording" data-testid="speech-record-btn">
+      🎙️ 开始录音
+    </button>
+  </view>
+
+  <!-- Recording -->
+  <view wx:elif="{{state === 'recording'}}" class="sp-recording">
+    <view class="sp-rec-header">
+      <text class="sp-rec-dot">🔴</text>
+      <text class="sp-rec-label">录音中</text>
+      <text class="sp-elapsed">{{elapsedDisplay}}</text>
+    </view>
+    <progress percent="{{progressPct}}" activeColor="#ef4444" stroke-width="4" />
+    <button class="sp-stop-btn" bind:tap="stopRecording" data-testid="speech-stop-btn">
+      ⏹ 停止录音
+    </button>
+  </view>
+
+  <!-- Recorded -->
+  <view wx:elif="{{state === 'recorded'}}" class="sp-done">
+    <text class="sp-done-label">录音完成 · {{elapsedDisplay}}</text>
+    <view class="sp-done-actions">
+      <button class="sp-play-btn" bind:tap="playRecording" wx:if="{{!isPlaying}}">▶ 试听</button>
+      <button class="sp-pause-btn" bind:tap="stopPlayback" wx:else>⏸ 停止</button>
+      <button class="sp-delete-btn" bind:tap="deleteRecording">🗑 重录</button>
+    </view>
+  </view>
+
+  <!-- Transcribed -->
+  <view wx:elif="{{state === 'transcribed'}}" class="sp-trans">
+    <text class="sp-trans-label">转写结果（只读核对）</text>
+    <view class="sp-trans-box"><text>{{transcript}}</text></view>
+    <view class="sp-trans-actions">
+      <button class="sp-delete-btn" bind:tap="deleteRecording">重录</button>
+      <button class="sp-confirm-btn" bind:tap="confirmTranscript">确认提交</button>
+    </view>
+  </view>
+
+  <!-- Failed -->
+  <view wx:elif="{{state === 'failed'}}" class="sp-fail">
+    <text class="sp-fail-msg">{{error || '识别失败，请重试'}}</text>
+    <button class="sp-delete-btn" bind:tap="deleteRecording">重录</button>
+  </view>
+</view>

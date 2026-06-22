@@ -24,7 +24,7 @@
 
     <!-- Single question: unified renderer -->
     <view wx:if="{{message.role === 'question' && message.item_data}}" class="single-question">
-      <view wx:for="{{message.item_data.media}}" wx:key="id" wx:if="{{item.role === 'prompt'}}">
+      <view wx:for="{{message.item_data.media}}" wx:key="id" wx:if="{{item.role === 'prompt' || item.role === 'question' || item.role === 'stimulus'}}">
         <media-prompt-block asset="{{item}}" />
       </view>
       <question-renderer
@@ -42,7 +42,7 @@
         </view>
 
         <!-- Prompt media for this batch item -->
-        <view wx:for="{{q.media}}" wx:for-item="m" wx:key="id" wx:if="{{m.role === 'prompt'}}">
+        <view wx:for="{{q.media}}" wx:for-item="m" wx:key="id" wx:if="{{m.role === 'prompt' || m.role === 'question' || m.role === 'stimulus'}}">
           <media-prompt-block asset="{{m}}" />
         </view>
 
@@ -63,7 +63,24 @@
           />
         </block>
 
-        <speech-response-placeholder wx:elif="{{itemModes[qi] === 'speech'}}" />
+        <block wx:elif="{{itemModes[qi] === 'speech'}}">
+          <text class="modality-question" wx:if="{{q.question_text}}">{{q.question_text}}</text>
+          <speech-recorder
+            session-id="{{sessionId}}"
+            question-item-id="{{q.question_item_id || 0}}"
+            bind:answer="onSpeechAsset"
+            data-qidx="{{qi}}"
+          />
+          <button
+            wx:if="{{skipOptions[qi]}}"
+            class="skip-modality {{batchAnswers[qi] === skipOptions[qi].index ? 'skip-modality-selected' : ''}}"
+            data-qidx="{{qi}}"
+            data-answer="{{skipOptions[qi].index}}"
+            bind:tap="onSkipModality"
+          >
+            {{skipOptions[qi].text}}
+          </button>
+        </block>
         <handwriting-response-placeholder wx:elif="{{itemModes[qi] === 'handwriting'}}" />
         <upload-response-placeholder wx:elif="{{itemModes[qi] === 'upload'}}" />
         <text wx:else class="qr-fallback">未知响应模式: {{itemModes[qi]}}</text>

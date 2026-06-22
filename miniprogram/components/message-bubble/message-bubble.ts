@@ -1,6 +1,7 @@
-import type { ChatMessage } from "../../types";
+import type { ChatMessage, QuestionOption } from "../../types";
 import {
   buildBatchAnswerPayload,
+  getSkipModalityOption,
   resolveResponseMode,
 } from "../../modules/response-utils";
 
@@ -8,6 +9,7 @@ Component({
   properties: {
     message: { type: Object, value: {} as ChatMessage },
     showTime: { type: Boolean, value: true },
+    sessionId: { type: String, value: "" },
   },
 
   data: {
@@ -17,6 +19,7 @@ Component({
     formattedTime: "",
     // Per-item resolved response modes for batch questions
     itemModes: [] as string[],
+    skipOptions: [] as Array<QuestionOption | undefined>,
   },
 
   observers: {
@@ -34,7 +37,12 @@ Component({
       this.setData({ isTextRole: role === "system" || role === "cold_start" });
     },
     "message.id": function () {
-      this.setData({ batchAnswers: {}, canBatchSubmit: false, itemModes: [] });
+      this.setData({
+        batchAnswers: {},
+        canBatchSubmit: false,
+        itemModes: [],
+        skipOptions: [],
+      });
     },
     "message.batch_questions": function () {
       this.setData({ batchAnswers: {}, canBatchSubmit: false });
@@ -65,7 +73,10 @@ Component({
     resolveItemModes() {
       const msg = this.properties.message as ChatMessage;
       const qs = msg.batch_questions || [];
-      this.setData({ itemModes: qs.map((q) => resolveResponseMode(q)) });
+      this.setData({
+        itemModes: qs.map((q) => resolveResponseMode(q)),
+        skipOptions: qs.map((q) => getSkipModalityOption(q)),
+      });
     },
 
     onSingleAnswer(e: WechatMiniprogram.CustomEvent) {
@@ -83,24 +94,34 @@ Component({
     checkSubmitEnabled(answers: Record<number, string>) {
       const msg = this.properties.message as ChatMessage;
       const qs = msg.batch_questions || [];
-      // Placeholder modes (speech, handwriting, upload) count as pre-filled
-      const required = qs.reduce((count, q, i) => {
+      const canSubmit = qs.every((q, i) => {
         const mode = resolveResponseMode(q);
-        return mode === "speech" || mode === "handwriting" || mode === "upload"
-          ? count // placeholder — no user input needed
-          : count + 1; // requires real answer
-      }, 0);
-      const filled = Object.entries(answers)
-        .filter(([, v]) => v.trim())
-        .filter(([k]) => {
-          const q = qs[Number(k)];
-          if (!q) return false;
-          const mode = resolveResponseMode(q);
-          return (
-            mode !== "speech" && mode !== "handwriting" && mode !== "upload"
-          );
-        }).length;
-      this.setData({ canBatchSubmit: filled >= required });
+        const hasAnswer = Boolean((answers[i] || "").trim());
+        if (mode === "speech" || mode === "handwriting" || mode === "upload") {
+          return getSkipModalityOption(q) ? hasAnswer : true;
+        }
+        return hasAnswer;
+      });
+      this.setData({ canBatchSubmit });
+    },
+
+    onSkipModality(e: WechatMiniprogram.TouchEvent) {
+      const qidx = e.currentTarget.dataset.qidx as number;
+      const answer = e.currentTarget.dataset.answer as string;
+      const answers = { ...this.data.batchAnswers, [qidx]: answer };
+      this.setData({ batchAnswers: answers });
+      this.checkSubmitEnabled(answers);
+    },
+
+    onSpeechAsset(e: WechatMiniprogram.CustomEvent) {
+      // speech-recorder triggers "answer" with the uploaded asset_id.
+      // Store it keyed by the batch item index so buildBatchAnswerPayload can
+      // route it into response_asset_ids for the backend grader.
+      const qidx = (e.currentTarget.dataset.qidx as number) ?? 0;
+      const assetId = (e.detail as string) || "";
+      const answers = { ...this.data.batchAnswers, [qidx]: assetId };
+      this.setData({ batchAnswers: answers });
+      this.checkSubmitEnabled(answers);
     },
 
     onBatchSubmit() {

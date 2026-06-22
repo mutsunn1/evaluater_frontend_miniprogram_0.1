@@ -74,6 +74,12 @@
 .dim-dot.reading {
   background: #a855f7;
 }
+.dim-dot.listening {
+  background: #ec4899;
+}
+.dim-dot.speaking {
+  background: #06b6d4;
+}
 
 .dim-num {
   font-size: 22rpx;

@@ -30,6 +30,7 @@
           wx:key="id"
           id="msg-{{item.id}}"
           message="{{item}}"
+          session-id="{{sessionId}}"
           bind:batchsubmit="onBatchSubmit"
           bind:openthinking="onOpenThinking"
         />

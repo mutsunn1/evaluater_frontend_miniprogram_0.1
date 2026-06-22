@@ -169,7 +169,7 @@ describe("api-adapter — streaming", () => {
           },
           batch_id: "b1",
           batch_index: 1,
-          skill_dimension: "reading",
+          skill_dimension: "listening",
         },
       },
     ]);
@@ -246,6 +246,51 @@ describe("api-adapter — streaming", () => {
       { index: "C", text: "选项三" },
       { index: "D", text: "选项四" },
     ]);
+  });
+
+  it("streamQuestion preserves listening skip option metadata", async () => {
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            question_type: "listening_comprehension",
+            question_text: "听音频，选择你听到的词。",
+            modality: "listening",
+            options: [
+              { index: "A", text: "苹果" },
+              {
+                index: "Z",
+                text: "现在先不做听力题",
+                answer_behavior: "skip_modality",
+                modality: "listening",
+              },
+            ],
+            scene: "听力",
+            grammar_focus: "水果词汇",
+            target_level: "HSK2",
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "listening",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn());
+
+    expect(result.questions[0].question_type).toBe("listening_comprehension");
+    expect(result.questions[0].response_mode).toBe("choice");
+    expect(result.questions[0].skill_dimension).toBe("listening");
+    expect(result.questions[0].modality).toBe("listening");
+    expect(result.questions[0].options?.[1]).toEqual({
+      index: "Z",
+      text: "现在先不做听力题",
+      answer_behavior: "skip_modality",
+      modality: "listening",
+      media_id: undefined,
+    });
   });
 
   it("streamQuestion rejects when stream ends without question data", async () => {

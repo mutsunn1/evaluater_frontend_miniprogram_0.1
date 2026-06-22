@@ -17,7 +17,14 @@ Component({
     profile: {
       user_id: "",
       hsk_level: 1,
-      skill_levels: { hsk: 1, vocabulary: 1, grammar: 1, reading: 1 },
+      skill_levels: {
+        hsk: 1,
+        vocabulary: 1,
+        grammar: 1,
+        reading: 1,
+        listening: 1,
+        speaking: 1,
+      },
       native_language: null,
       stubborn_errors: [] as string[],
       strengths: [] as string[],

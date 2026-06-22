@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { resolveResponseMode, buildBatchAnswerPayload } from "./response-utils";
+import {
+  buildBatchAnswerPayload,
+  getSkipModalityOption,
+  resolveResponseMode,
+} from "./response-utils";
 import type { ItemData } from "../types";
 
 function makeItem(overrides: Partial<ItemData> = {}): ItemData {
@@ -46,6 +50,26 @@ describe("resolveResponseMode", () => {
     expect(
       resolveResponseMode(makeItem({ question_type: "reading_comprehension" }))
     ).toBe("text");
+  });
+
+  it("listening_comprehension without response_mode → choice", () => {
+    expect(
+      resolveResponseMode(
+        makeItem({ question_type: "listening_comprehension" })
+      )
+    ).toBe("choice");
+  });
+
+  it("listening without response_mode → choice", () => {
+    expect(resolveResponseMode(makeItem({ question_type: "listening" }))).toBe(
+      "choice"
+    );
+  });
+
+  it("speaking_response without response_mode → speech", () => {
+    expect(
+      resolveResponseMode(makeItem({ question_type: "speaking_response" }))
+    ).toBe("speech");
   });
 
   it('explicit response_mode "speech" takes precedence', () => {
@@ -109,6 +133,17 @@ describe("resolveResponseMode", () => {
         makeItem({
           question_type: "multiple_choice",
           response_mode: "single" as ItemData["response_mode"],
+        })
+      )
+    ).toBe("choice");
+  });
+
+  it('backend response_mode alias "listening" is treated as choice', () => {
+    expect(
+      resolveResponseMode(
+        makeItem({
+          question_type: "listening",
+          response_mode: "listening" as ItemData["response_mode"],
         })
       )
     ).toBe("choice");
@@ -216,6 +251,76 @@ describe("buildBatchAnswerPayload", () => {
       answer: "我的答案",
       response_mode: "text",
       response_asset_ids: [],
+    });
+  });
+
+  it("speech skip option submits selected skip answer with response metadata", () => {
+    const payload = buildBatchAnswerPayload(
+      [
+        makeItem({
+          question_type: "speaking_response",
+          response_mode: "speech",
+          options: [
+            {
+              index: "Z",
+              text: "现在先不做口语题",
+              answer_behavior: "skip_modality",
+              modality: "speaking",
+            },
+          ],
+        }),
+      ],
+      { 0: "Z" }
+    );
+
+    expect(payload[0]).toEqual({
+      question_index: 0,
+      answer: "Z",
+      response_mode: "speech",
+      response_asset_ids: [],
+    });
+  });
+
+  it("speech uploaded asset_id routes into response_asset_ids, not answer", () => {
+    // Regression for the miniprogram "录音无声" symptom: the asset_id used to
+    // be stuffed into `answer`, which the backend grader ignores (it only
+    // consults response_asset_ids), so uploaded speech was graded as empty.
+    const payload = buildBatchAnswerPayload(
+      [
+        makeItem({
+          question_type: "speaking_response",
+          response_mode: "speech",
+        }),
+      ],
+      { 0: "resp_asset_abc123" }
+    );
+
+    expect(payload[0]).toEqual({
+      question_index: 0,
+      answer: "",
+      response_mode: "speech",
+      response_asset_ids: ["resp_asset_abc123"],
+    });
+  });
+
+  it("finds the modality skip option", () => {
+    const item = makeItem({
+      options: [
+        { index: "A", text: "苹果" },
+        {
+          index: "Z",
+          text: "现在先不做听力题",
+          answer_behavior: "skip_modality",
+          modality: "listening",
+        },
+      ],
+    });
+
+    expect(getSkipModalityOption(item)).toEqual({
+      index: "Z",
+      text: "现在先不做听力题",
+      answer_behavior: "skip_modality",
+      modality: "listening",
     });
   });
 

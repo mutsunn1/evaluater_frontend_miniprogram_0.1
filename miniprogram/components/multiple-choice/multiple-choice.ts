@@ -4,6 +4,7 @@ interface Option {
   index: string;
   text?: string;
   media_id?: string;
+  answer_behavior?: string;
 }
 
 interface OptionAssetEntry {

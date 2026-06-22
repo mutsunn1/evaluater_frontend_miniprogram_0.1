@@ -15,6 +15,8 @@ const CHOICE_RESPONSE_ALIASES = new Set([
   "multiple_choice",
   "multiple_select",
   "true_false",
+  "listening",
+  "listening_comprehension",
 ]);
 
 const TEXT_RESPONSE_ALIASES = new Set([
@@ -25,6 +27,12 @@ const TEXT_RESPONSE_ALIASES = new Set([
   "reading_comprehension",
   "free_text",
 ]);
+
+export function getSkipModalityOption(q: ItemData) {
+  return (q.options || []).find(
+    (opt) => opt.answer_behavior === "skip_modality"
+  );
+}
 
 /**
  * Resolve the effective response mode for a question.
@@ -46,9 +54,15 @@ export function resolveResponseMode(q: ItemData): ResponseMode {
   if (
     q.question_type === "multiple_choice" ||
     q.question_type === "multiple_select" ||
-    q.question_type === "true_false"
+    q.question_type === "true_false" ||
+    q.question_type === "listening" ||
+    q.question_type === "listening_comprehension"
   ) {
     return "choice";
+  }
+
+  if (q.question_type === "speaking_response") {
+    return "speech";
   }
 
   return "text";
@@ -87,10 +101,40 @@ export function buildBatchAnswerPayload(
       return { question_index: i, answer: answers[i] || "" };
     }
 
-    // text, speech, handwriting, upload — all include response_mode and asset_ids
+    // text, handwriting, upload — answer value in `answer`, no asset_ids.
+    // speech — distinguish two cases that both land in answers[i]:
+    //   (a) the learner tapped the "现在先不做口语题" skip option → the value
+    //       is the skip option's index (e.g. "Z"); it must travel in `answer`
+    //       so the backend grader detects the skip via answer text.
+    //   (b) the learner recorded and uploaded audio → the value is the asset
+    //       id; it must travel in response_asset_ids (the backend grader only
+    //       consults that field, so putting it in `answer` = "录音无声").
+    if (mode === "speech") {
+      const value = (answers[i] || "").trim();
+      const skipOption = getSkipModalityOption(q);
+      const isSkipAnswer =
+        skipOption &&
+        typeof skipOption.index === "string" &&
+        skipOption.index === value;
+      if (value && !isSkipAnswer) {
+        return {
+          question_index: i,
+          answer: "",
+          response_mode: mode,
+          response_asset_ids: [value],
+        };
+      }
+      return {
+        question_index: i,
+        answer: value,
+        response_mode: mode,
+        response_asset_ids: [],
+      };
+    }
+
     return {
       question_index: i,
-      answer: mode === "text" ? answers[i] || "" : answers[i] || "",
+      answer: answers[i] || "",
       response_mode: mode,
       response_asset_ids: [],
     };

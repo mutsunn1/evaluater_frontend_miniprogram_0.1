@@ -20,6 +20,18 @@
   background: #eff6ff;
 }
 
+.option-skip {
+  border-style: dashed;
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.option-skip.selected {
+  border-style: solid;
+  border-color: #6b7280;
+  background: #f3f4f6;
+}
+
 .opt-letter {
   width: 44rpx;
   height: 44rpx;
@@ -36,6 +48,16 @@
 
 .option.selected .opt-letter {
   background: #3b82f6;
+  color: #fff;
+}
+
+.option-skip .opt-letter {
+  background: #e5e7eb;
+  color: #6b7280;
+}
+
+.option-skip.selected .opt-letter {
+  background: #6b7280;
   color: #fff;
 }
 

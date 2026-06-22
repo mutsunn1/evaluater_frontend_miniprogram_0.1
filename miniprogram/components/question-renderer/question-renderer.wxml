@@ -12,7 +12,7 @@
 
   <!-- Dispatch by type -->
   <multiple-choice
-    wx:if="{{qType === 'multiple_choice' || qType === 'multiple_select'}}"
+    wx:if="{{qType === 'multiple_choice' || qType === 'multiple_select' || qType === 'listening_comprehension'}}"
     options="{{options}}"
     media="{{media}}"
     multiSelect="{{qType === 'multiple_select'}}"
@@ -37,6 +37,17 @@
     subQuestions="{{subQuestions}}"
     bind:answer="onAnswer"
   />
+
+  <!-- speaking_response: prompt media only. The speech recorder + skip
+       option live in message-bubble.wxml (batch path), where sessionId and
+       questionItemId are available. Rendering <speech-recorder /> here
+       previously mounted it with no props and no answer binding, so the
+       asset_id never propagated. -->
+  <block wx:elif="{{qType === 'speaking_response' || qType === 'speaking'}}">
+    <view wx:for="{{media}}" wx:key="id" wx:if="{{item.role === 'prompt' || item.role === 'question' || item.role === 'stimulus'}}">
+      <media-prompt-block asset="{{item}}" />
+    </view>
+  </block>
 
   <!-- Fallback: plain text for unknown types -->
   <text wx:else class="qr-fallback">不支持的问题类型: {{qType}}</text>

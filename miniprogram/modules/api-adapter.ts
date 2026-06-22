@@ -1,5 +1,6 @@
 import { startSseRequest } from "./sse-parser";
 import { toThinkingSteps } from "./session-utils";
+import { API_BASE_URL } from "./config";
 import type {
   ItemData,
   ThinkingStep,
@@ -9,7 +10,7 @@ import type {
   MediaAsset,
 } from "../types";
 
-const BASE_URL = "https://evalapi.mutsum1.xyz";
+const BASE_URL = API_BASE_URL;
 
 // ---- wx.request Promise wrapper for non-streaming calls ----
 
@@ -83,6 +84,62 @@ export function getUserProfile(userId: string): Promise<UserProfileData> {
   });
 }
 
+// ---- Multipart upload (speech recording) ----
+
+export interface SpeechUploadResult {
+  asset_id: string;
+  status: "uploaded" | "transcribed" | "failed";
+  transcript: string;
+  duration_ms?: number;
+  error?: string;
+}
+
+export function uploadSpeechRecording(
+  sessionId: string,
+  questionItemId: number,
+  filePath: string,
+  durationMs: number,
+  fileName: string
+): Promise<SpeechUploadResult> {
+  return new Promise((resolve, reject) => {
+    const wxApi = (globalThis as Record<string, unknown>).wx as
+      | {
+          uploadFile: (o: Record<string, unknown>) => { abort(): void };
+        }
+      | undefined;
+    if (!wxApi?.uploadFile) {
+      reject(new Error("wx.uploadFile is not available"));
+      return;
+    }
+    const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/assets/speech`;
+    const task = wxApi.uploadFile({
+      url,
+      filePath,
+      name: "file",
+      formData: {
+        question_item_id: String(questionItemId),
+        duration_ms: String(durationMs),
+      },
+      success(res: { statusCode: number; data: string }) {
+        if (res.statusCode >= 400) {
+          reject(new Error(`Upload failed with status ${res.statusCode}`));
+          return;
+        }
+        try {
+          resolve(JSON.parse(res.data) as SpeechUploadResult);
+        } catch {
+          reject(new Error("Upload returned invalid JSON"));
+        }
+      },
+      fail(err: { errMsg: string }) {
+        reject(new Error(err.errMsg || "upload failed"));
+      },
+    });
+    void task;
+    void fileName;
+  });
+}
+
 // ---- Streaming helper ----
 
 interface StreamOpts {
@@ -102,6 +159,21 @@ function normalizeQuestionType(
   if (raw === "multiple" || raw === "multi_choice") return "multiple_select";
   if (raw === "judge" || raw === "true_or_false") return "true_false";
   if (raw === "blank" || raw === "fill") return "fill_in_blank";
+  if (
+    raw === "listening" ||
+    raw === "listening_comprehension" ||
+    raw === "listening_choice"
+  ) {
+    return "listening_comprehension";
+  }
+  if (
+    raw === "speaking" ||
+    raw === "speaking_response" ||
+    raw === "oral_response" ||
+    raw === "read_aloud"
+  ) {
+    return "speaking_response";
+  }
   if (raw === "reading" || raw === "read") {
     return Array.isArray(question.options) && question.options.length > 0
       ? "multiple_choice"
@@ -139,16 +211,30 @@ function normalizeResponseMode(
     raw === "select" ||
     raw === "multiple_choice" ||
     raw === "multiple_select" ||
-    raw === "true_false"
+    raw === "true_false" ||
+    raw === "listening" ||
+    raw === "listening_comprehension"
   ) {
     return "choice";
   }
   if (
+    raw === "speaking" ||
+    raw === "speaking_response" ||
+    raw === "oral_response" ||
+    raw === "read_aloud"
+  ) {
+    return "speech";
+  }
+  if (
     questionType === "multiple_choice" ||
     questionType === "multiple_select" ||
-    questionType === "true_false"
+    questionType === "true_false" ||
+    questionType === "listening_comprehension"
   ) {
     return "choice";
+  }
+  if (questionType === "speaking_response") {
+    return "speech";
   }
   return "text";
 }
@@ -171,6 +257,12 @@ function normalizeOptions(value: unknown): QuestionOption[] {
             : undefined,
       media_id:
         typeof record.media_id === "string" ? record.media_id : undefined,
+      answer_behavior:
+        typeof record.answer_behavior === "string"
+          ? record.answer_behavior
+          : undefined,
+      modality:
+        typeof record.modality === "string" ? record.modality : undefined,
     };
   });
 }
@@ -203,10 +295,16 @@ function normalizeStreamQuestion(
     batch_id: eventData.batch_id as string,
     batch_index: eventData.batch_index as number,
     batch_total: eventData.batch_total as number,
+    modality:
+      typeof rawQuestion.modality === "string"
+        ? rawQuestion.modality
+        : undefined,
     skill_dimension: eventData.skill_dimension as
       | "vocabulary"
       | "grammar"
-      | "reading",
+      | "reading"
+      | "listening"
+      | "speaking",
   } as ItemData;
 }
 

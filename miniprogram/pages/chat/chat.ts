@@ -442,10 +442,22 @@ Page({
       }
 
       // Accumulate dimension_rounds from the questions we generated
-      const dimRounds = { ...this.data.confidence.dimension_rounds };
+      const dimRounds = {
+        vocabulary: this.data.confidence.dimension_rounds.vocabulary || 0,
+        grammar: this.data.confidence.dimension_rounds.grammar || 0,
+        reading: this.data.confidence.dimension_rounds.reading || 0,
+        listening: this.data.confidence.dimension_rounds.listening || 0,
+        speaking: this.data.confidence.dimension_rounds.speaking || 0,
+      };
       for (const q of this._currentQuestions) {
         const dim = q.skill_dimension;
-        if (dim === "vocabulary" || dim === "grammar" || dim === "reading") {
+        if (
+          dim === "vocabulary" ||
+          dim === "grammar" ||
+          dim === "reading" ||
+          dim === "listening" ||
+          dim === "speaking"
+        ) {
           dimRounds[dim] += 1;
         }
       }

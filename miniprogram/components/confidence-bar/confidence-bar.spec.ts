@@ -13,7 +13,13 @@ function makeConfidence(
     total_rounds: 0,
     min_rounds: 8,
     max_rounds: 18,
-    dimension_rounds: { vocabulary: 0, grammar: 0, reading: 0 },
+    dimension_rounds: {
+      vocabulary: 0,
+      grammar: 0,
+      reading: 0,
+      listening: 0,
+      speaking: 0,
+    },
     ci_lower: 0,
     ci_upper: 0,
     remaining: 18,
@@ -97,7 +103,13 @@ describe("confidence-bar logic", () => {
   });
 
   describe("dimension_rounds accumulation", () => {
-    type DimRounds = { vocabulary: number; grammar: number; reading: number };
+    type DimRounds = {
+      vocabulary: number;
+      grammar: number;
+      reading: number;
+      listening: number;
+      speaking: number;
+    };
 
     function accumulateDimensionRounds(
       prev: DimRounds,
@@ -106,33 +118,58 @@ describe("confidence-bar logic", () => {
       const next = { ...prev };
       for (const r of results) {
         const dim = r.skill_dimension;
-        if (dim === "vocabulary" || dim === "grammar" || dim === "reading") {
+        if (
+          dim === "vocabulary" ||
+          dim === "grammar" ||
+          dim === "reading" ||
+          dim === "listening" ||
+          dim === "speaking"
+        ) {
           next[dim] += 1;
         }
       }
       return next;
     }
 
-    it("increments vocabulary and reading from results", () => {
+    it("increments vocabulary, reading, and listening from results", () => {
       const results = [
         { skill_dimension: "vocabulary" },
         { skill_dimension: "reading" },
+        { skill_dimension: "listening" },
       ];
       const next = accumulateDimensionRounds(
-        { vocabulary: 0, grammar: 0, reading: 0 },
+        { vocabulary: 0, grammar: 0, reading: 0, listening: 0, speaking: 0 },
         results
       );
-      expect(next).toEqual({ vocabulary: 1, grammar: 0, reading: 1 });
+      expect(next).toEqual({
+        vocabulary: 1,
+        grammar: 0,
+        reading: 1,
+        listening: 1,
+        speaking: 0,
+      });
     });
 
     it("accumulates across multiple rounds", () => {
-      const prev = { vocabulary: 2, grammar: 1, reading: 1 };
+      const prev = {
+        vocabulary: 2,
+        grammar: 1,
+        reading: 1,
+        listening: 0,
+        speaking: 0,
+      };
       const results = [
         { skill_dimension: "vocabulary" },
         { skill_dimension: "grammar" },
       ];
       const next = accumulateDimensionRounds(prev, results);
-      expect(next).toEqual({ vocabulary: 3, grammar: 2, reading: 1 });
+      expect(next).toEqual({
+        vocabulary: 3,
+        grammar: 2,
+        reading: 1,
+        listening: 0,
+        speaking: 0,
+      });
     });
 
     it("ignores unknown skill_dimensions", () => {
@@ -141,31 +178,55 @@ describe("confidence-bar logic", () => {
         { skill_dimension: "unknown" },
       ];
       const next = accumulateDimensionRounds(
-        { vocabulary: 0, grammar: 0, reading: 0 },
+        { vocabulary: 0, grammar: 0, reading: 0, listening: 0, speaking: 0 },
         results
       );
-      expect(next).toEqual({ vocabulary: 1, grammar: 0, reading: 0 });
+      expect(next).toEqual({
+        vocabulary: 1,
+        grammar: 0,
+        reading: 0,
+        listening: 0,
+        speaking: 0,
+      });
     });
 
     it("handles empty results array", () => {
       const next = accumulateDimensionRounds(
-        { vocabulary: 0, grammar: 0, reading: 0 },
+        { vocabulary: 0, grammar: 0, reading: 0, listening: 0, speaking: 0 },
         []
       );
-      expect(next).toEqual({ vocabulary: 0, grammar: 0, reading: 0 });
+      expect(next).toEqual({
+        vocabulary: 0,
+        grammar: 0,
+        reading: 0,
+        listening: 0,
+        speaking: 0,
+      });
     });
   });
 
   // ---- Accumulate from questions (preferred: questions always have skill_dimension) ----
 
   function accumulateDimensionsFromQuestions(
-    prev: { vocabulary: number; grammar: number; reading: number },
+    prev: {
+      vocabulary: number;
+      grammar: number;
+      reading: number;
+      listening: number;
+      speaking: number;
+    },
     questions: Array<{ skill_dimension?: string }>
   ) {
     const next = { ...prev };
     for (const q of questions) {
       const dim = q.skill_dimension;
-      if (dim === "vocabulary" || dim === "grammar" || dim === "reading") {
+      if (
+        dim === "vocabulary" ||
+        dim === "grammar" ||
+        dim === "reading" ||
+        dim === "listening" ||
+        dim === "speaking"
+      ) {
         next[dim] += 1;
       }
     }
@@ -178,12 +239,19 @@ describe("confidence-bar logic", () => {
         { skill_dimension: "vocabulary" },
         { skill_dimension: "grammar" },
         { skill_dimension: "reading" },
+        { skill_dimension: "listening" },
       ];
       const next = accumulateDimensionsFromQuestions(
-        { vocabulary: 0, grammar: 0, reading: 0 },
+        { vocabulary: 0, grammar: 0, reading: 0, listening: 0, speaking: 0 },
         questions
       );
-      expect(next).toEqual({ vocabulary: 1, grammar: 1, reading: 1 });
+      expect(next).toEqual({
+        vocabulary: 1,
+        grammar: 1,
+        reading: 1,
+        listening: 1,
+        speaking: 0,
+      });
     });
 
     it("counts multiple questions of same dimension", () => {
@@ -193,19 +261,31 @@ describe("confidence-bar logic", () => {
         { skill_dimension: "grammar" },
       ];
       const next = accumulateDimensionsFromQuestions(
-        { vocabulary: 0, grammar: 0, reading: 0 },
+        { vocabulary: 0, grammar: 0, reading: 0, listening: 0, speaking: 0 },
         questions
       );
-      expect(next).toEqual({ vocabulary: 2, grammar: 1, reading: 0 });
+      expect(next).toEqual({
+        vocabulary: 2,
+        grammar: 1,
+        reading: 0,
+        listening: 0,
+        speaking: 0,
+      });
     });
 
     it("accumulates across rounds (prev non-zero)", () => {
       const questions = [{ skill_dimension: "reading" }];
       const next = accumulateDimensionsFromQuestions(
-        { vocabulary: 3, grammar: 2, reading: 1 },
+        { vocabulary: 3, grammar: 2, reading: 1, listening: 0, speaking: 0 },
         questions
       );
-      expect(next).toEqual({ vocabulary: 3, grammar: 2, reading: 2 });
+      expect(next).toEqual({
+        vocabulary: 3,
+        grammar: 2,
+        reading: 2,
+        listening: 0,
+        speaking: 0,
+      });
     });
 
     it("questions without skill_dimension are ignored", () => {
@@ -215,10 +295,16 @@ describe("confidence-bar logic", () => {
         { skill_dimension: "grammar" },
       ];
       const next = accumulateDimensionsFromQuestions(
-        { vocabulary: 0, grammar: 0, reading: 0 },
+        { vocabulary: 0, grammar: 0, reading: 0, listening: 0, speaking: 0 },
         questions
       );
-      expect(next).toEqual({ vocabulary: 1, grammar: 1, reading: 0 });
+      expect(next).toEqual({
+        vocabulary: 1,
+        grammar: 1,
+        reading: 0,
+        listening: 0,
+        speaking: 0,
+      });
     });
   });
 

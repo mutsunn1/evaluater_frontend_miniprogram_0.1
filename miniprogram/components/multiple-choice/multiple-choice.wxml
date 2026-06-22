@@ -14,7 +14,7 @@
   <view
     wx:for="{{options}}"
     wx:key="index"
-    class="option {{selected[item.index] ? 'selected' : ''}}"
+    class="option {{item.answer_behavior === 'skip_modality' ? 'option-skip' : ''}} {{selected[item.index] ? 'selected' : ''}}"
     bind:tap="onTap"
     data-idx="{{item.index}}"
   >

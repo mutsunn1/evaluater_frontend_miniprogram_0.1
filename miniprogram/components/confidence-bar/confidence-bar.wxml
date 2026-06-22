@@ -17,6 +17,10 @@
       <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.grammar : 0}}</text>
       <view class="dim-dot reading"></view>
       <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.reading : 0}}</text>
+      <view class="dim-dot listening"></view>
+      <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.listening : 0}}</text>
+      <view class="dim-dot speaking"></view>
+      <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.speaking : 0}}</text>
       <text class="dim-spacer">|</text>
       <text class="dim-label">正确率</text>
       <text class="dim-val">{{accuracyPct}}%</text>

@@ -96,6 +96,13 @@
   background: #f97316;
 }
 
+.skill-pink {
+  background: #ec4899;
+}
+.skill-cyan {
+  background: #06b6d4;
+}
+
 .tags-section {
   margin-bottom: 16rpx;
 }

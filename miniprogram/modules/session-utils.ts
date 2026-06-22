@@ -41,6 +41,12 @@ export function createDefaultConfidence(): ConfidenceStats {
     total_rounds: 0,
     min_rounds: 8,
     max_rounds: 18,
-    dimension_rounds: { vocabulary: 0, grammar: 0, reading: 0 },
+    dimension_rounds: {
+      vocabulary: 0,
+      grammar: 0,
+      reading: 0,
+      listening: 0,
+      speaking: 0,
+    },
   };
 }

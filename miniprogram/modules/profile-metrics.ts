@@ -2,8 +2,14 @@ import type { UserProfileData } from "../types";
 
 export interface ProfileSkillRow {
   name: string;
-  key: "overall" | "vocabulary" | "grammar" | "reading";
-  colorKey: "blue" | "purple" | "green" | "orange";
+  key:
+    | "overall"
+    | "vocabulary"
+    | "grammar"
+    | "reading"
+    | "listening"
+    | "speaking";
+  colorKey: "blue" | "purple" | "green" | "orange" | "pink" | "cyan";
   pct: number;
   display: string;
 }
@@ -30,6 +36,8 @@ export function buildProfileSkillRows(
     vocabulary: 0,
     grammar: 0,
     reading: 0,
+    listening: 0,
+    speaking: 0,
   };
   const rows: Array<
     Omit<ProfileSkillRow, "pct" | "display"> & { value: number | undefined }
@@ -48,6 +56,18 @@ export function buildProfileSkillRows(
     },
     { name: "语法", key: "grammar", colorKey: "green", value: levels.grammar },
     { name: "阅读", key: "reading", colorKey: "orange", value: levels.reading },
+    {
+      name: "听力",
+      key: "listening",
+      colorKey: "pink",
+      value: levels.listening,
+    },
+    {
+      name: "口语",
+      key: "speaking",
+      colorKey: "cyan",
+      value: levels.speaking,
+    },
   ];
 
   return rows.map((row) => {
