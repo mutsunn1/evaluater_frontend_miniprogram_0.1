@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // Mock wx.request for non-streaming calls
 let mockWxRequest: ReturnType<typeof vi.fn>;
@@ -215,6 +215,109 @@ describe("api-adapter — streaming", () => {
     );
   });
 
+  it("streamQuestion normalizes relative media URLs to absolute URLs", async () => {
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            question_type: "listening_comprehension",
+            question_text: "听音频选择",
+            scene: "",
+            grammar_focus: "",
+            target_level: "",
+            media: [
+              {
+                id: "tts_1",
+                type: "audio",
+                role: "prompt",
+                source: "generated",
+                url: "/api/v1/media/assets/tts_1/content",
+              },
+            ],
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "listening",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn());
+
+    expect(result.questions[0].media?.[0].url).toBe(
+      "https://evalapi.mutsum1.xyz/api/v1/media/assets/tts_1/content"
+    );
+  });
+
+  it("normalizes options with nested media.media_id", async () => {
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            question_type: "multiple_choice",
+            question_text: "选图",
+            options: [
+              { text: "苹果", media: { media_id: "openmoji_apple" } },
+              { text: "香蕉", media: { media_id: "openmoji_banana" } },
+            ],
+            scene: "",
+            grammar_focus: "",
+            target_level: "",
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "vocabulary",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn());
+
+    expect(result.questions[0].options).toEqual([
+      { index: "A", text: "苹果", media_id: "openmoji_apple" },
+      { index: "B", text: "香蕉", media_id: "openmoji_banana" },
+    ]);
+  });
+  it("streamQuestion preserves already absolute media URLs", async () => {
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            question_type: "listening_comprehension",
+            question_text: "听音频选择",
+            scene: "",
+            grammar_focus: "",
+            target_level: "",
+            media: [
+              {
+                id: "aud1",
+                type: "audio",
+                role: "prompt",
+                source: "prepared",
+                url: "https://cdn.example.com/audio.mp3",
+              },
+            ],
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "listening",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn());
+
+    expect(result.questions[0].media?.[0].url).toBe(
+      "https://cdn.example.com/audio.mp3"
+    );
+  });
+
   it('streamQuestion normalizes backend question_type "reading" with options to multiple_choice', async () => {
     mockSseParser([
       {
@@ -291,6 +394,110 @@ describe("api-adapter — streaming", () => {
       modality: "listening",
       media_id: undefined,
     });
+  });
+
+  it("streamQuestion normalizes short_answer to fill_in_blank to avoid unknown fallback", async () => {
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            question_type: "short_answer",
+            question_text: "请简述你的答案。",
+            scene: "",
+            grammar_focus: "",
+            target_level: "",
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "reading",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn());
+
+    expect(result.questions[0].question_type).not.toBe("unknown");
+    expect(result.questions[0].question_type).toBe("fill_in_blank");
+  });
+
+  it("streamQuestion normalizes image_description to speaking_response", async () => {
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            question_type: "image_description",
+            question_text: "请描述图片内容。",
+            scene: "",
+            grammar_focus: "",
+            target_level: "",
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "speaking",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn());
+
+    expect(result.questions[0].question_type).toBe("speaking_response");
+    expect(result.questions[0].response_mode).toBe("speech");
+  });
+  it('streamQuestion normalizes backend question_type "short_reading" with options to multiple_choice', async () => {
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            question_type: "short_reading",
+            question_text: "短文\n\n问题：正确答案是？",
+            options: ["选项一", "选项二", "选项三", "选项四"],
+            scene: "",
+            grammar_focus: "",
+            target_level: "",
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "reading",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn());
+
+    expect(result.questions[0].question_type).not.toBe("unknown");
+    expect(result.questions[0].question_type).toBe("multiple_choice");
+  });
+
+  it('streamQuestion normalizes backend question_type "short_reading" without options to reading_comprehension', async () => {
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            question_type: "short_reading",
+            question_text: "短文\n\n问题：请简述答案。",
+            scene: "",
+            grammar_focus: "",
+            target_level: "",
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "reading",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn());
+
+    expect(result.questions[0].question_type).not.toBe("unknown");
+    expect(result.questions[0].question_type).toBe("reading_comprehension");
   });
 
   it("streamQuestion rejects when stream ends without question data", async () => {

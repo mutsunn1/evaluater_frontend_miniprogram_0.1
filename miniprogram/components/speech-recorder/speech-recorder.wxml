@@ -27,6 +27,7 @@
     <view class="sp-done-actions">
       <button class="sp-play-btn" bind:tap="playRecording" wx:if="{{!isPlaying}}">▶ 试听</button>
       <button class="sp-pause-btn" bind:tap="stopPlayback" wx:else>⏸ 停止</button>
+      <button class="sp-upload-btn" bind:tap="uploadRecording" data-testid="speech-upload-btn">上传并转写</button>
       <button class="sp-delete-btn" bind:tap="deleteRecording">🗑 重录</button>
     </view>
   </view>

@@ -1,6 +1,6 @@
 import { startSseRequest } from "./sse-parser";
 import { toThinkingSteps } from "./session-utils";
-import { API_BASE_URL } from "./config";
+import { API_BASE_URL, assertApiUrlAllowed } from "./config";
 import type {
   ItemData,
   ThinkingStep,
@@ -20,6 +20,7 @@ function request<T>(opts: {
   data?: unknown;
 }): Promise<T> {
   return new Promise((resolve, reject) => {
+    assertApiUrlAllowed(opts.url);
     const wx = (globalThis as Record<string, unknown>).wx as
       | {
           request: (o: Record<string, unknown>) => { abort(): void };
@@ -101,7 +102,9 @@ export function uploadSpeechRecording(
   durationMs: number,
   fileName: string
 ): Promise<SpeechUploadResult> {
+  const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/assets/speech`;
   return new Promise((resolve, reject) => {
+    assertApiUrlAllowed(url);
     const wxApi = (globalThis as Record<string, unknown>).wx as
       | {
           uploadFile: (o: Record<string, unknown>) => { abort(): void };
@@ -111,7 +114,6 @@ export function uploadSpeechRecording(
       reject(new Error("wx.uploadFile is not available"));
       return;
     }
-    const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/assets/speech`;
     const task = wxApi.uploadFile({
       url,
       filePath,
@@ -158,7 +160,8 @@ function normalizeQuestionType(
   if (raw === "single" || raw === "single_choice") return "multiple_choice";
   if (raw === "multiple" || raw === "multi_choice") return "multiple_select";
   if (raw === "judge" || raw === "true_or_false") return "true_false";
-  if (raw === "blank" || raw === "fill") return "fill_in_blank";
+  if (raw === "blank" || raw === "fill" || raw === "short_answer")
+    return "fill_in_blank";
   if (
     raw === "listening" ||
     raw === "listening_comprehension" ||
@@ -170,11 +173,12 @@ function normalizeQuestionType(
     raw === "speaking" ||
     raw === "speaking_response" ||
     raw === "oral_response" ||
-    raw === "read_aloud"
+    raw === "read_aloud" ||
+    raw === "image_description"
   ) {
     return "speaking_response";
   }
-  if (raw === "reading" || raw === "read") {
+  if (raw === "reading" || raw === "read" || raw === "short_reading") {
     return Array.isArray(question.options) && question.options.length > 0
       ? "multiple_choice"
       : "reading_comprehension";
@@ -247,6 +251,10 @@ function normalizeOptions(value: unknown): QuestionOption[] {
       return { index: fallbackIndex, text: opt };
     }
     const record = (opt || {}) as Record<string, unknown>;
+    const nestedMedia =
+      typeof record.media === "object" && record.media !== null
+        ? (record.media as Record<string, unknown>)
+        : undefined;
     return {
       index: String(record.index || record.label || fallbackIndex),
       text:
@@ -256,7 +264,11 @@ function normalizeOptions(value: unknown): QuestionOption[] {
             ? record.content
             : undefined,
       media_id:
-        typeof record.media_id === "string" ? record.media_id : undefined,
+        typeof record.media_id === "string"
+          ? record.media_id
+          : typeof nestedMedia?.media_id === "string"
+            ? nestedMedia.media_id
+            : undefined,
       answer_behavior:
         typeof record.answer_behavior === "string"
           ? record.answer_behavior
@@ -268,7 +280,20 @@ function normalizeOptions(value: unknown): QuestionOption[] {
 }
 
 function normalizeMedia(value: unknown): MediaAsset[] {
-  return Array.isArray(value) ? (value as MediaAsset[]) : [];
+  if (!Array.isArray(value)) return [];
+  return (value as MediaAsset[]).map((m) => {
+    if (!m || typeof m.url !== "string") return m;
+    const url = m.url;
+    // 后端可能返回以 / 开头的相对媒体 URL，小程序会将其视为本地文件路径。
+    // 统一补成相对当前 API 基址的绝对 URL，与 Web 端行为一致。
+    const absoluteUrl =
+      url.startsWith("http://") || url.startsWith("https://")
+        ? url
+        : url.startsWith("/")
+          ? `${BASE_URL}${url}`
+          : `${BASE_URL}/${url}`;
+    return { ...m, url: absoluteUrl };
+  });
 }
 
 function normalizeStreamQuestion(
@@ -317,6 +342,7 @@ function streamRequest<T>(
   opts?: StreamOpts
 ): Promise<T> {
   return new Promise((resolve, reject) => {
+    assertApiUrlAllowed(url);
     if (opts?.signal?.aborted) {
       reject(new Error("Request aborted"));
       return;
@@ -392,6 +418,7 @@ export function streamQuestion(
   }
 
   return new Promise((resolve, reject) => {
+    assertApiUrlAllowed(url);
     if (opts?.signal?.aborted) {
       reject(new Error("Request aborted"));
       return;

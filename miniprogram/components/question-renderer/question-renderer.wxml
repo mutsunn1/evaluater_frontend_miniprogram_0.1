@@ -8,7 +8,19 @@
   </view>
 
   <!-- Question text -->
-  <text class="qr-text" wx:if="{{questionText && qType !== 'reading_comprehension'}}">{{questionText}}</text>
+  <view class="qr-text" wx:if="{{questionText && qType !== 'reading_comprehension'}}">
+    <block wx:for="{{questionSegments}}" wx:key="index">
+      <text wx:if="{{item.type === 'text'}}">{{item.content}}</text>
+      <image
+        wx:elif="{{item.type === 'image'}}"
+        class="qr-inline-img"
+        src="{{item.src}}"
+        alt="{{item.alt}}"
+        style="{{item.style}}"
+        mode="aspectFit"
+      />
+    </block>
+  </view>
 
   <!-- Dispatch by type -->
   <multiple-choice

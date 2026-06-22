@@ -8,6 +8,28 @@
 .mpb-audio {
   width: 100%;
 }
+.mpb-audio-btn {
+  display: inline-block;
+  padding: 16rpx 32rpx;
+  font-size: 28rpx;
+  line-height: 1.4;
+  color: #fff;
+  background-color: #3b82f6;
+  border-radius: 12rpx;
+}
+.mpb-audio-btn[disabled] {
+  background-color: #9ca3af;
+}
+.mpb-audio-playing {
+  background-color: #ef4444;
+}
+.mpb-audio-error {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #ef4444;
+  word-break: break-all;
+}
 .mpb-video {
   width: 100%;
   border-radius: 16rpx;

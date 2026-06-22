@@ -1,7 +1,16 @@
 <!-- Prompt media renderer — image, audio, video with alt text -->
 <view class="mpb">
   <image wx:if="{{isImage}}" class="mpb-img" src="{{asset.url}}" mode="widthFix" />
-  <audio wx:elif="{{isAudio}}" class="mpb-audio" src="{{asset.url}}" controls />
+  <view wx:elif="{{isAudio}}" class="mpb-audio">
+    <button
+      class="mpb-audio-btn {{isPlaying ? 'mpb-audio-playing' : ''}}"
+      bind:tap="toggleAudio"
+      disabled="{{audioError}}"
+    >
+      {{audioError ? '音频加载失败' : (isPlaying ? '暂停' : '播放音频')}}
+    </button>
+    <text wx:if="{{audioError && asset.url}}" class="mpb-audio-error">{{asset.url}}</text>
+  </view>
   <video wx:elif="{{isVideo}}" class="mpb-video" src="{{asset.url}}" controls />
   <text wx:if="{{hasAlt}}" class="mpb-alt">{{altText}}</text>
 </view>

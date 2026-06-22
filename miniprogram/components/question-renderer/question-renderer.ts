@@ -12,13 +12,53 @@ function formatTargetLevel(value: string | undefined): string {
   return /^HSK/i.test(text) ? text : `HSK ${text}`;
 }
 
+interface QuestionSegment {
+  type: "text" | "image";
+  content?: string;
+  src?: string;
+  alt?: string;
+  style?: string;
+}
+
+function parseQuestionText(text: string): QuestionSegment[] {
+  const segments: QuestionSegment[] = [];
+  const imgRegex = /<img\s+([^>]+)>/gi;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = imgRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({
+        type: "text",
+        content: text.slice(lastIndex, match.index),
+      });
+    }
+
+    const attrText = match[1];
+    const src = /src\s*=\s*["']([^"']+)["']/i.exec(attrText)?.[1] || "";
+    const alt = /alt\s*=\s*["']([^"']*)["']/i.exec(attrText)?.[1] || "";
+    const style = /style\s*=\s*["']([^"']*)["']/i.exec(attrText)?.[1] || "";
+
+    segments.push({ type: "image", src, alt, style });
+    lastIndex = imgRegex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    segments.push({ type: "text", content: text.slice(lastIndex) });
+  }
+
+  return segments;
+}
+
 function derive(itemData: ItemData) {
+  const questionText = itemData.question_text || "";
   return {
     qType: itemData.question_type || "unknown",
     scene: itemData.scene || "",
     grammarFocus: itemData.grammar_focus || "",
     targetLevel: formatTargetLevel(itemData.target_level),
-    questionText: itemData.question_text || "",
+    questionText,
+    questionSegments: parseQuestionText(questionText),
     options: (itemData.options || []) as Option[],
     media: Array.isArray(itemData.media)
       ? (itemData.media as MediaAsset[])

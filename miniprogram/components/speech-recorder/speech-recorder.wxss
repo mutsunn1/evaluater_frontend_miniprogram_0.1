@@ -56,12 +56,16 @@
   gap: 8px;
 }
 .sp-play-btn,
-.sp-pause-btn {
+.sp-pause-btn,
+.sp-upload-btn {
   flex: 1;
   background: #3b82f6;
   color: #fff;
   border-radius: 8px;
   font-size: 14px;
+}
+.sp-upload-btn {
+  background: #22c55e;
 }
 .sp-delete-btn {
   background: none;

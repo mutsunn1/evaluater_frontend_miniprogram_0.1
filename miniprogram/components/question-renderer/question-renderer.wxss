@@ -26,6 +26,12 @@
   white-space: pre-wrap;
 }
 
+.qr-inline-img {
+  display: inline-block;
+  vertical-align: middle;
+  max-width: 100%;
+}
+
 .qr-fallback {
   font-size: 28rpx;
   color: #9ca3af;

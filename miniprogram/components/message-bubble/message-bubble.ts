@@ -102,7 +102,7 @@ Component({
         }
         return hasAnswer;
       });
-      this.setData({ canBatchSubmit });
+      this.setData({ canBatchSubmit: canSubmit });
     },
 
     onSkipModality(e: WechatMiniprogram.TouchEvent) {

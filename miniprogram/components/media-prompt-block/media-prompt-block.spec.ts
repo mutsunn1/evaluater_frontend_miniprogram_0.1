@@ -40,6 +40,15 @@ const audioAsset: MediaAsset = {
   alt: "音频提示",
 };
 
+describe("media-prompt-block audio rendering", () => {
+  it("audio type exposes isAudio and audio URL for custom player", () => {
+    const d = deriveDisplay(audioAsset);
+    expect(d.isAudio).toBe(true);
+    expect(d.isImage).toBe(false);
+    expect(d.isVideo).toBe(false);
+  });
+});
+
 const videoAsset: MediaAsset = {
   id: "vid1",
   type: "video",

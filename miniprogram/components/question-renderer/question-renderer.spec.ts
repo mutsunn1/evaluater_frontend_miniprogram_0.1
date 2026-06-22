@@ -1,6 +1,87 @@
 import { describe, it, expect } from "vitest";
 import type { MediaAsset, QuestionOption } from "../../types";
 
+interface QuestionSegment {
+  type: "text" | "image";
+  content?: string;
+  src?: string;
+  alt?: string;
+  style?: string;
+}
+
+function parseQuestionText(text: string): QuestionSegment[] {
+  const segments: QuestionSegment[] = [];
+  const imgRegex = /<img\s+([^>]+)>/gi;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = imgRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({
+        type: "text",
+        content: text.slice(lastIndex, match.index),
+      });
+    }
+
+    const attrText = match[1];
+    const src = /src\s*=\s*["']([^"']+)["']/i.exec(attrText)?.[1] || "";
+    const alt = /alt\s*=\s*["']([^"']*)["']/i.exec(attrText)?.[1] || "";
+    const style = /style\s*=\s*["']([^"']*)["']/i.exec(attrText)?.[1] || "";
+
+    segments.push({ type: "image", src, alt, style });
+    lastIndex = imgRegex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    segments.push({ type: "text", content: text.slice(lastIndex) });
+  }
+
+  return segments;
+}
+
+describe("parseQuestionText splits text and inline images", () => {
+  it("returns a single text segment when no img tag", () => {
+    const segments = parseQuestionText("请选择正确的词语。");
+    expect(segments).toEqual([{ type: "text", content: "请选择正确的词语。" }]);
+  });
+
+  it("extracts img src, alt, and style", () => {
+    const text =
+      "请看图片：<img src='https://example.test/apple.png' alt='苹果' style='width:100px;height:100px;'> 选择词语";
+    const segments = parseQuestionText(text);
+    expect(segments).toEqual([
+      { type: "text", content: "请看图片：" },
+      {
+        type: "image",
+        src: "https://example.test/apple.png",
+        alt: "苹果",
+        style: "width:100px;height:100px;",
+      },
+      { type: "text", content: " 选择词语" },
+    ]);
+  });
+
+  it("handles double quotes around attributes", () => {
+    const text =
+      'A<img src="https://example.test/b.png" alt="香蕉" style="width:80px;">B';
+    const segments = parseQuestionText(text);
+    expect(segments).toEqual([
+      { type: "text", content: "A" },
+      {
+        type: "image",
+        src: "https://example.test/b.png",
+        alt: "香蕉",
+        style: "width:80px;",
+      },
+      { type: "text", content: "B" },
+    ]);
+  });
+
+  it("returns empty array for empty input", () => {
+    expect(parseQuestionText("")).toEqual([]);
+  });
+});
+
 describe("multiple-choice answer format", () => {
   function formatSingleChoice(selected: string): string {
     return selected || "";

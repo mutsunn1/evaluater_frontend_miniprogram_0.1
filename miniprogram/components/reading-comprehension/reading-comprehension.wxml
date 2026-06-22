@@ -9,7 +9,7 @@
   <text class="question-text" wx:if="{{questionText}}">{{questionText}}</text>
 
   <!-- Sub-questions -->
-  <view class="sub-qs">
+  <view class="sub-qs" wx:if="{{subQuestions.length}}">
     <view wx:for="{{subQuestions}}" wx:key="sub_id" class="sub-q">
       <text class="sub-q-text">{{index + 1}}. {{item.question_text}}</text>
       <input
@@ -20,6 +20,16 @@
         bind:input="onInput"
       />
     </view>
+  </view>
+
+  <!-- Fallback: single reading question without sub-questions -->
+  <view class="main-answer" wx:else>
+    <input
+      class="main-answer-input"
+      placeholder="请输入答案"
+      value="{{mainAnswer}}"
+      bind:input="onMainInput"
+    />
   </view>
 
   <button class="confirm-btn" bind:tap="onConfirm" wx:if="{{canSubmit}}">

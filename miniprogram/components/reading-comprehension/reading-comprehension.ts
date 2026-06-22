@@ -14,11 +14,12 @@ Component({
   data: {
     answers: {} as Record<string, string>,
     canSubmit: false,
+    mainAnswer: "",
   },
 
   observers: {
     subQuestions: function () {
-      this.setData({ answers: {}, canSubmit: false });
+      this.setData({ answers: {}, canSubmit: false, mainAnswer: "" });
     },
   },
 
@@ -32,12 +33,21 @@ Component({
       );
       this.setData({ answers, canSubmit });
     },
+    onMainInput(e: WechatMiniprogram.InputEvent) {
+      const mainAnswer = e.detail.value || "";
+      const canSubmit = mainAnswer.trim().length > 0;
+      this.setData({ mainAnswer, canSubmit });
+    },
     onConfirm() {
       const subQs = this.properties.subQuestions as SubQuestion[];
-      const lines = subQs.map(
-        (q) => `[${q.sub_id}] ${this.data.answers[q.sub_id] || ""}`
-      );
-      this.triggerEvent("answer", { text: lines.join("\n") });
+      if (subQs.length > 0) {
+        const lines = subQs.map(
+          (q) => `[${q.sub_id}] ${this.data.answers[q.sub_id] || ""}`
+        );
+        this.triggerEvent("answer", { text: lines.join("\n") });
+      } else {
+        this.triggerEvent("answer", { text: this.data.mainAnswer });
+      }
     },
   },
 });
