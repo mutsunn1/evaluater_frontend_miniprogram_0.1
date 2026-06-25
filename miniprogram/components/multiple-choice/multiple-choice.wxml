@@ -25,6 +25,6 @@
   </view>
 
   <button class="confirm-btn" bind:tap="onConfirm" wx:if="{{hasSelection}}">
-    确认答案
+    {{i18n.confirm}}
   </button>
 </view>

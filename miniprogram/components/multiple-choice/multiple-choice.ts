@@ -1,4 +1,14 @@
 import type { MediaAsset } from "../../types";
+import i18nBehavior from "../../behaviors/i18n";
+import { buildI18n } from "../../utils/i18n-data";
+
+const choiceI18nMap = {
+  confirm: "chat.question.confirm",
+};
+
+function buildChoiceI18n() {
+  return buildI18n(choiceI18nMap);
+}
 
 interface Option {
   index: string;
@@ -25,6 +35,8 @@ function buildOptionAssets(
 }
 
 Component({
+  behaviors: [i18nBehavior],
+
   properties: {
     options: { type: Array, value: [] as Option[] },
     multiSelect: { type: Boolean, value: false },
@@ -35,6 +47,7 @@ Component({
     selected: {} as Record<string, boolean>,
     hasSelection: false,
     optionAssets: [] as OptionAssetEntry[],
+    i18n: buildChoiceI18n(),
   },
 
   observers: {
@@ -56,6 +69,10 @@ Component({
   },
 
   methods: {
+    refreshI18n() {
+      this.setData({ i18n: buildChoiceI18n() });
+    },
+
     getAssetByIndex(idx: string): MediaAsset | null {
       const entry = this.data.optionAssets.find((e) => e.index === idx);
       return entry ? entry.asset : null;

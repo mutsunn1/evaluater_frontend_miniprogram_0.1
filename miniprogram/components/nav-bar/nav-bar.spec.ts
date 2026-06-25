@@ -13,9 +13,9 @@ describe("nav-bar layout contract", () => {
     const wxss = read("nav-bar.wxss");
     const wxml = read("nav-bar.wxml");
 
-    expect(wxml).toContain("中文水平评测");
-    expect(wxml).toContain("结束评测");
-    expect(wxml).toContain("退出");
+    expect(wxml).toContain("{{i18n.appTitle}}");
+    expect(wxml).toContain("{{i18n.endEvaluation}}");
+    expect(wxml).toContain("{{i18n.logout}}");
     expect(wxss).not.toContain("position: fixed");
     expect(wxml).not.toContain('height: {{layout.totalHeight}}px;"></view>');
   });

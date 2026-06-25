@@ -32,7 +32,41 @@ import type {
   ThinkingStep,
   ItemData,
 } from "../../types";
+import i18nBehavior from "../../behaviors/i18n";
+import { i18n } from "../../behaviors/i18n";
+import { buildI18n } from "../../utils/i18n-data";
 import { placeholderAnswerLabel } from "../../modules/response-utils";
+
+const chatI18nMap = {
+  loadingColdStart: "chat.loading.coldStart",
+  loadingGenerating: "chat.loading.generating",
+  loadingAnalyzing: "chat.loading.analyzing",
+  loadingJudging: "chat.loading.judging",
+  loadingNextRound: "chat.loading.nextRound",
+  loadingText: "chat.loading.text",
+  placeholderColdStart: "chat.placeholder.coldStart",
+  commonSend: "common.send",
+  answerInQuestion: "chat.answerInQuestion",
+  commonRetry: "common.retry",
+  commonEndEvaluation: "common.endEvaluation",
+  commonLogout: "common.logout",
+  endConfirmBody: "chat.endConfirm.body",
+  exitConfirmBody: "chat.exitConfirm.body",
+  commonCancel: "common.cancel",
+  feedbackCorrect: "chat.feedback.correct",
+  feedbackRecorded: "chat.feedback.recorded",
+  errorGeneration: "chat.error.generation",
+  fetchFailed: "chat.answer.fetchFailed",
+  submitFailed: "chat.answer.failed",
+  coldStartComplete: "chat.coldStart.completeFallback",
+  coldStartAnswerFailed: "chat.coldStart.answerFailed",
+  autoStopTitle: "chat.autoStop.title",
+  rolesBatchQuestion: "chat.roles.batchQuestion",
+};
+
+function buildChatI18n() {
+  return buildI18n(chatI18nMap);
+}
 
 const THROTTLE_MS = 50;
 
@@ -56,15 +90,17 @@ function throttleSetData(
 }
 
 Page({
+  behaviors: [i18nBehavior],
   data: {
     sessionId: null as string | null,
     messages: [] as ChatMessage[],
     isColdStart: false,
     isWaitingAnswer: false,
     isLoading: false,
-    loadingText: "正在加载...",
+    loadingText: i18n.t("chat.loading.text"),
     error: null as string | null,
     sessionResult: null as SessionResult | null,
+    i18n: buildChatI18n(),
 
     userId: "",
     profileOpen: false,
@@ -95,6 +131,26 @@ Page({
   _busy: false,
   _ended: false,
 
+  refreshI18n() {
+    const i18n = buildChatI18n();
+    this.setData({ i18n, loadingText: this.resolveLoadingText(i18n) });
+  },
+
+  resolveLoadingText(i18n = this.data.i18n) {
+    switch (
+      (this as Record<string, unknown>)._loadingKind as string | undefined
+    ) {
+      case "cold_start":
+        return i18n.loadingAnalyzing;
+      case "generating":
+        return i18n.loadingGenerating;
+      case "judging":
+        return i18n.loadingJudging;
+      default:
+        return i18n.loadingText;
+    }
+  },
+
   // ================================================================
   //  Lifecycle
   // ================================================================
@@ -111,6 +167,7 @@ Page({
       isWaitingAnswer: s.isWaitingAnswer,
       isLoading: s.isLoading,
       error: s.error,
+      i18n: buildChatI18n(),
     });
 
     this._unsub = subscribe(() => {
@@ -161,9 +218,10 @@ Page({
     }
 
     setLoading(true, "cold_start");
+    (this as Record<string, unknown>)._loadingKind = "cold_start";
     this.setData({
       isLoading: true,
-      loadingText: "正在准备问题...",
+      loadingText: this.resolveLoadingText(),
       liveThinking: [],
     });
 
@@ -178,7 +236,8 @@ Page({
         addMessage({
           id: createClientId(),
           role: "system",
-          content: "冷启动完成！开始正式评测。",
+          source: "system",
+          content: this.data.i18n.coldStartComplete,
           timestamp: new Date().toISOString(),
         });
         this.setData({ liveThinking: [] });
@@ -226,7 +285,8 @@ Page({
 
     setWaitingAnswer(false);
     setLoading(true, "cold_start");
-    this.setData({ loadingText: "正在处理...", liveThinking: [] });
+    (this as Record<string, unknown>)._loadingKind = "cold_start";
+    this.setData({ loadingText: this.resolveLoadingText(), liveThinking: [] });
 
     try {
       const r = await streamColdStartAnswer(
@@ -254,7 +314,8 @@ Page({
         addMessage({
           id: createClientId(),
           role: "system",
-          content: "冷启动完成！开始正式评测。",
+          source: "system",
+          content: this.data.i18n.coldStartComplete,
           timestamp: new Date().toISOString(),
         });
         this.fetchNextQuestion();
@@ -263,7 +324,11 @@ Page({
       }
     } catch (err) {
       setLoading(false);
-      setError(err instanceof Error ? err.message : "提交答案失败");
+      setError(
+        err instanceof Error
+          ? err.message
+          : this.data.i18n.coldStartAnswerFailed
+      );
       this.setData({ liveThinking: [] });
       this._busy = false;
     }
@@ -291,9 +356,10 @@ Page({
     this._qMsgId = "";
 
     setLoading(true, "generating");
+    (this as Record<string, unknown>)._loadingKind = "generating";
     setError(null);
     this.setData({
-      loadingText: "正在生成题目，请稍候...",
+      loadingText: this.resolveLoadingText(),
       liveThinking: [],
       error: null,
     });
@@ -305,7 +371,10 @@ Page({
         addMessage({
           id: this._qMsgId,
           role: "question",
-          content: `第 ${questions.length} 道题目`,
+          content: this.data.i18n.rolesBatchQuestion.replace(
+            /\{count\}/g,
+            String(questions.length)
+          ),
           batch_questions: [...questions],
           timestamp: new Date().toISOString(),
           thinking_steps:
@@ -354,7 +423,7 @@ Page({
         addMessage({
           id: createClientId(),
           role: "question",
-          content: "题目生成异常",
+          content: this.data.i18n.errorGeneration,
           timestamp: new Date().toISOString(),
         });
         setWaitingAnswer(false);
@@ -370,7 +439,7 @@ Page({
       this._busy = false;
     } catch (err) {
       setLoading(false);
-      setError(err instanceof Error ? err.message : "获取题目失败");
+      setError(err instanceof Error ? err.message : this.data.i18n.fetchFailed);
       this.setData({ liveThinking: [] });
       this._busy = false;
     }
@@ -407,7 +476,8 @@ Page({
 
     setWaitingAnswer(false);
     setLoading(true, "judging");
-    this.setData({ loadingText: "正在评分，请稍候...", liveThinking: [] });
+    (this as Record<string, unknown>)._loadingKind = "judging";
+    this.setData({ loadingText: this.resolveLoadingText(), liveThinking: [] });
 
     try {
       const r = await batchSubmitAnswer(
@@ -426,7 +496,9 @@ Page({
           role: "feedback",
           content:
             (item.feedback as string) ||
-            (item.is_correct ? "正确" : "答案已记录"),
+            (item.is_correct
+              ? this.data.i18n.feedbackCorrect
+              : this.data.i18n.feedbackRecorded),
           item_data: {
             question_type: "unknown",
             scene: "",
@@ -491,7 +563,9 @@ Page({
       }
     } catch (err) {
       setLoading(false);
-      setError(err instanceof Error ? err.message : "提交答案失败");
+      setError(
+        err instanceof Error ? err.message : this.data.i18n.submitFailed
+      );
       this.setData({ liveThinking: [] });
       this._busy = false;
     }
@@ -503,7 +577,7 @@ Page({
 
   handleAutoStop() {
     this.setData({
-      autoStopAlert: "评测完成！系统已达到足够的置信度，即将生成报告...",
+      autoStopAlert: this.data.i18n.autoStopTitle,
     });
     setTimeout(async () => {
       if (this._abort.aborted) return;
@@ -554,7 +628,8 @@ Page({
     if (!sid) return;
 
     setLoading(true, "judging");
-    this.setData({ loadingText: "正在生成报告..." });
+    (this as Record<string, unknown>)._loadingKind = "judging";
+    this.setData({ loadingText: this.resolveLoadingText() });
     try {
       const [summary, conf] = await Promise.all([
         endSession(sid),
@@ -596,6 +671,10 @@ Page({
 
   onProfileToggle() {
     this.setData({ profileOpen: !this.data.profileOpen });
+  },
+
+  onLangChange() {
+    this.refreshI18n();
   },
 
   onBatchSubmit(e: WechatMiniprogram.CustomEvent) {

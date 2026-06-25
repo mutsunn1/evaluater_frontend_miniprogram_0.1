@@ -1,5 +1,5 @@
 <!-- Upload response placeholder — disabled button, phase 1 only -->
 <view class="urp" data-testid="upload-drop-zone">
-  <button class="urp-btn" disabled data-testid="upload-btn">📎 上传作答</button>
-  <text class="urp-hint">暂不支持自动评分</text>
+  <button class="urp-btn" disabled data-testid="upload-btn">📎 {{i18n.click}}</button>
+  <text class="urp-hint">{{i18n.notScored}}</text>
 </view>

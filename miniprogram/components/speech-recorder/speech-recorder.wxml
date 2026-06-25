@@ -2,9 +2,9 @@
 <view class="sp-rec">
   <!-- Idle -->
   <view wx:if="{{state === 'idle'}}" class="sp-idle">
-    <text class="sp-hint">录制你的口头回答（最长60秒）</text>
+    <text class="sp-hint">{{i18n.hint}}</text>
     <button class="sp-record-btn" bind:tap="startRecording" data-testid="speech-record-btn">
-      🎙️ 开始录音
+      🎙️ {{i18n.start}}
     </button>
   </view>
 
@@ -12,39 +12,39 @@
   <view wx:elif="{{state === 'recording'}}" class="sp-recording">
     <view class="sp-rec-header">
       <text class="sp-rec-dot">🔴</text>
-      <text class="sp-rec-label">录音中</text>
+      <text class="sp-rec-label">{{i18n.recording}}</text>
       <text class="sp-elapsed">{{elapsedDisplay}}</text>
     </view>
     <progress percent="{{progressPct}}" activeColor="#ef4444" stroke-width="4" />
     <button class="sp-stop-btn" bind:tap="stopRecording" data-testid="speech-stop-btn">
-      ⏹ 停止录音
+      ⏹ {{i18n.stop}}
     </button>
   </view>
 
   <!-- Recorded -->
   <view wx:elif="{{state === 'recorded'}}" class="sp-done">
-    <text class="sp-done-label">录音完成 · {{elapsedDisplay}}</text>
+    <text class="sp-done-label">{{i18n.recorded}} · {{elapsedDisplay}}</text>
     <view class="sp-done-actions">
-      <button class="sp-play-btn" bind:tap="playRecording" wx:if="{{!isPlaying}}">▶ 试听</button>
-      <button class="sp-pause-btn" bind:tap="stopPlayback" wx:else>⏸ 停止</button>
-      <button class="sp-upload-btn" bind:tap="uploadRecording" data-testid="speech-upload-btn">上传并转写</button>
-      <button class="sp-delete-btn" bind:tap="deleteRecording">🗑 重录</button>
+      <button class="sp-play-btn" bind:tap="playRecording" wx:if="{{!isPlaying}}">▶ {{i18n.play}}</button>
+      <button class="sp-pause-btn" bind:tap="stopPlayback" wx:else>⏸ {{i18n.pause}}</button>
+      <button class="sp-upload-btn" bind:tap="uploadRecording" data-testid="speech-upload-btn">{{i18n.upload}}</button>
+      <button class="sp-delete-btn" bind:tap="deleteRecording">🗑 {{i18n.reRecord}}</button>
     </view>
   </view>
 
   <!-- Transcribed -->
   <view wx:elif="{{state === 'transcribed'}}" class="sp-trans">
-    <text class="sp-trans-label">转写结果（只读核对）</text>
+    <text class="sp-trans-label">{{i18n.transcriptTitle}}</text>
     <view class="sp-trans-box"><text>{{transcript}}</text></view>
     <view class="sp-trans-actions">
-      <button class="sp-delete-btn" bind:tap="deleteRecording">重录</button>
-      <button class="sp-confirm-btn" bind:tap="confirmTranscript">确认提交</button>
+      <button class="sp-delete-btn" bind:tap="deleteRecording">{{i18n.reRecord}}</button>
+      <button class="sp-confirm-btn" bind:tap="confirmTranscript">{{i18n.confirm}}</button>
     </view>
   </view>
 
   <!-- Failed -->
   <view wx:elif="{{state === 'failed'}}" class="sp-fail">
-    <text class="sp-fail-msg">{{error || '识别失败，请重试'}}</text>
-    <button class="sp-delete-btn" bind:tap="deleteRecording">重录</button>
+    <text class="sp-fail-msg">{{error || i18n.transcribeFailed}}</text>
+    <button class="sp-delete-btn" bind:tap="deleteRecording">{{i18n.reRecord}}</button>
   </view>
 </view>

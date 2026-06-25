@@ -7,12 +7,31 @@ import {
   clearSession,
 } from "../../modules/session-store";
 import { createClientId } from "../../modules/id";
+import i18nBehavior from "../../behaviors/i18n";
+
+import { i18n } from "../../behaviors/i18n";
+
+function buildLoginI18n() {
+  return {
+    appTitleFull: i18n.t("common.appTitleFull"),
+    userId: i18n.t("common.userId"),
+    userIdPlaceholder: i18n.t("common.userIdPlaceholder"),
+    loggingIn: i18n.t("common.loggingIn"),
+    startEvaluation: i18n.t("common.startEvaluation"),
+    langZh: i18n.t("common.language.zh"),
+    langEn: i18n.t("common.language.en"),
+  };
+}
 
 Page({
+  behaviors: [i18nBehavior],
+
   data: {
     inputId: "",
     loading: false,
     errorMsg: "",
+    errorDisplay: "",
+    i18n: buildLoginI18n(),
   },
 
   onLoad() {
@@ -21,10 +40,32 @@ Page({
     if (saved) {
       this.setData({ inputId: saved });
     }
+    this.refreshI18n();
+  },
+
+  refreshI18n() {
+    this.setData({ i18n: buildLoginI18n() });
+  },
+
+  updateErrorDisplay() {
+    const { errorMsg } = this.data;
+    this.setData({
+      errorDisplay: errorMsg
+        ? this.t("common.error.backend", { message: errorMsg })
+        : "",
+    });
   },
 
   onInputChange(e: { detail: { value: string } }) {
     this.setData({ inputId: e.detail.value, errorMsg: "" });
+    this.updateErrorDisplay();
+  },
+
+  onSwitchLocale(e: WechatMiniprogram.TouchEvent) {
+    const next = e.currentTarget.dataset.locale as "en" | "zh";
+    this.switchLocale(next);
+    this.refreshI18n();
+    this.updateErrorDisplay();
   },
 
   async handleStart() {
@@ -33,6 +74,7 @@ Page({
 
     setUserId(id);
     this.setData({ loading: true, errorMsg: "" });
+    this.updateErrorDisplay();
 
     try {
       const result = await createSession(id);
@@ -42,16 +84,18 @@ Page({
       addMessage({
         id: createClientId(),
         role: "system",
+        source: "system",
         content: result.needs_cold_start
-          ? "欢迎！系统将通过几轮问答了解您的中文水平，请简要回答以下问题。"
-          : `欢迎回来！您的当前 HSK 等级为 ${result.hsk_level} 级。`,
+          ? "chat.welcome.coldStart"
+          : "chat.welcome.assessment",
         timestamp: new Date().toISOString(),
       });
 
       wx.redirectTo({ url: "/pages/chat/chat" });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "创建会话失败，请重试";
+      const msg = err instanceof Error ? err.message : "error";
       this.setData({ errorMsg: msg, loading: false });
+      this.updateErrorDisplay();
     }
   },
 });

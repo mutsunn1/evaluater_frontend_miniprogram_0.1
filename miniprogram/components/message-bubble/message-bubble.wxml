@@ -9,7 +9,7 @@
 
   <view class="bubble bubble-{{message.role}}">
     <!-- System / cold_start text -->
-    <text wx:if="{{isTextRole}}" class="bubble-text">{{message.content}}</text>
+    <text wx:if="{{isTextRole}}" class="bubble-text">{{displayContent}}</text>
 
     <!-- User text -->
     <text wx:if="{{message.role === 'user'}}" class="bubble-text">{{message.content}}</text>
@@ -83,7 +83,7 @@
         </block>
         <handwriting-response-placeholder wx:elif="{{itemModes[qi] === 'handwriting'}}" />
         <upload-response-placeholder wx:elif="{{itemModes[qi] === 'upload'}}" />
-        <text wx:else class="qr-fallback">未知响应模式: {{itemModes[qi]}}</text>
+        <text wx:else class="qr-fallback">{{i18n.loadingText}}: {{itemModes[qi]}}</text>
       </view>
 
       <button
@@ -91,7 +91,7 @@
         disabled="{{!canBatchSubmit}}"
         bind:tap="onBatchSubmit"
       >
-        提交全部答案
+        {{i18n.submitAll}}
       </button>
     </view>
   </view>

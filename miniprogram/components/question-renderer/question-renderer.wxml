@@ -2,8 +2,8 @@
 <view class="qr">
   <!-- Meta tags: scene, grammar focus, target level -->
   <view class="qr-meta" wx:if="{{scene || grammarFocus || targetLevel}}">
-    <text class="meta-tag" wx:if="{{scene}}">场景: {{scene}}</text>
-    <text class="meta-tag" wx:if="{{grammarFocus}}">语法: {{grammarFocus}}</text>
+    <text class="meta-tag" wx:if="{{scene}}">{{sceneLabel}}: {{scene}}</text>
+    <text class="meta-tag" wx:if="{{grammarFocus}}">{{grammarLabel}}: {{grammarFocus}}</text>
     <text class="meta-tag" wx:if="{{targetLevel}}">{{targetLevel}}</text>
   </view>
 
@@ -62,5 +62,5 @@
   </block>
 
   <!-- Fallback: plain text for unknown types -->
-  <text wx:else class="qr-fallback">不支持的问题类型: {{qType}}</text>
+  <text wx:else class="qr-fallback">{{unsupportedLabel}}: {{qType}}</text>
 </view>

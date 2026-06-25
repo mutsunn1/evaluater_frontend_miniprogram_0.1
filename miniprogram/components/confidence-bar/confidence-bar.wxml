@@ -6,33 +6,33 @@
       <view class="progress-bg">
         <view class="progress-fill {{progressColor}}" style="width: {{progressPct}}%;"></view>
       </view>
-      <text class="progress-text">{{confidence.total_rounds || 0}}/{{confidence.max_rounds || 18}}</text>
+      <text class="progress-text">{{roundText}}</text>
     </view>
 
     <!-- Dimensions -->
     <view class="dim-row">
       <view class="dim-dot vocab"></view>
-      <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.vocabulary : 0}}</text>
+      <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.vocabulary : 0}}{{i18n.roundUnit}}</text>
       <view class="dim-dot grammar"></view>
-      <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.grammar : 0}}</text>
+      <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.grammar : 0}}{{i18n.roundUnit}}</text>
       <view class="dim-dot reading"></view>
-      <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.reading : 0}}</text>
+      <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.reading : 0}}{{i18n.roundUnit}}</text>
       <view class="dim-dot listening"></view>
-      <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.listening : 0}}</text>
+      <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.listening : 0}}{{i18n.roundUnit}}</text>
       <view class="dim-dot speaking"></view>
-      <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.speaking : 0}}</text>
+      <text class="dim-num">{{confidence.dimension_rounds ? confidence.dimension_rounds.speaking : 0}}{{i18n.roundUnit}}</text>
       <text class="dim-spacer">|</text>
-      <text class="dim-label">正确率</text>
+      <text class="dim-label">{{i18n.accuracy}}</text>
       <text class="dim-val">{{accuracyPct}}%</text>
       <text class="dim-spacer">|</text>
-      <text class="dim-label">置信度</text>
+      <text class="dim-label">{{i18n.confidence}}</text>
       <text class="dim-val">{{confidencePct}}%</text>
     </view>
 
     <!-- Auto-stop indicator -->
     <view class="stop-badge" wx:if="{{confidence.should_stop}}">
       <text class="stop-pulse"></text>
-      <text>评测完成</text>
+      <text>{{i18n.complete}}</text>
     </view>
   </view>
 </view>

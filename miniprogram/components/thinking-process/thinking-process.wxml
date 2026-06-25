@@ -12,6 +12,6 @@
     <text class="step-preview">{{item.preview}}</text>
   </view>
   <view class="expand-hint" wx:if="{{allCount > visibleSteps.length}}" bind:tap="onExpandAll">
-    <text>查看全部 {{allCount}} 条思考过程</text>
+    <text>{{viewAllText}}</text>
   </view>
 </view>

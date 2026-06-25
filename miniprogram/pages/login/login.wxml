@@ -1,13 +1,22 @@
 <!-- Login page — matches the mobile Web look: light blue bg, centered white card -->
 <view class="container">
+  <view
+    class="page-lang-switch"
+    bind:tap="onSwitchLocale"
+    data-locale="{{locale === 'en' ? 'zh' : 'en'}}"
+    data-testid="language-switcher"
+  >
+    {{locale === 'en' ? i18n.langZh : i18n.langEn}}
+  </view>
+
   <view class="card">
-    <view class="title">中文水平评测系统</view>
-    <view class="subtitle">输入用户 ID 开始评测</view>
+    <view class="title">{{i18n.appTitleFull}}</view>
+    <view class="subtitle">{{i18n.userId}}</view>
 
     <input
       class="input"
       type="text"
-      placeholder="请输入用户 ID"
+      placeholder="{{i18n.userIdPlaceholder}}"
       value="{{inputId}}"
       bind:input="onInputChange"
       disabled="{{loading}}"
@@ -20,9 +29,9 @@
       bind:tap="handleStart"
       loading="{{loading}}"
     >
-      {{loading ? '正在创建会话...' : '开始评测'}}
+      {{loading ? i18n.loggingIn : i18n.startEvaluation}}
     </button>
 
-    <view class="error" wx:if="{{errorMsg}}">{{errorMsg}}</view>
+    <view class="error" wx:if="{{errorDisplay}}">{{errorDisplay}}</view>
   </view>
 </view>

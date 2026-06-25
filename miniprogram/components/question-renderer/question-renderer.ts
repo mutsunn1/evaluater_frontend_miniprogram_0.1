@@ -1,5 +1,18 @@
 import type { ItemData, MediaAsset, SubQuestion } from "../../types";
 
+import i18nBehavior from "../../behaviors/i18n";
+import { buildI18n } from "../../utils/i18n-data";
+
+const questionI18nMap = {
+  scene: "chat.question.scene",
+  grammar: "chat.question.grammar",
+  unsupported: "chat.question.unsupported",
+};
+
+function buildQuestionI18n() {
+  return buildI18n(questionI18nMap);
+}
+
 interface Option {
   index: string;
   text?: string;
@@ -50,12 +63,17 @@ function parseQuestionText(text: string): QuestionSegment[] {
   return segments;
 }
 
-function derive(itemData: ItemData) {
+function derive(
+  itemData: ItemData,
+  labels: ReturnType<typeof buildQuestionI18n>
+) {
   const questionText = itemData.question_text || "";
   return {
     qType: itemData.question_type || "unknown",
     scene: itemData.scene || "",
+    sceneLabel: itemData.scene ? labels.scene : "",
     grammarFocus: itemData.grammar_focus || "",
+    grammarLabel: itemData.grammar_focus ? labels.grammar : "",
     targetLevel: formatTargetLevel(itemData.target_level),
     questionText,
     questionSegments: parseQuestionText(questionText),
@@ -66,10 +84,13 @@ function derive(itemData: ItemData) {
     blankCount: itemData.blank_count || 1,
     readingPassage: itemData.reading_passage || "",
     subQuestions: (itemData.sub_questions || []) as SubQuestion[],
+    unsupportedLabel: labels.unsupported,
   };
 }
 
 Component({
+  behaviors: [i18nBehavior],
+
   properties: {
     itemData: {
       type: Object,
@@ -88,33 +109,40 @@ Component({
     },
   },
 
-  data: derive({
-    question_type: "unknown",
-    scene: "",
-    grammar_focus: "",
-    target_level: "",
-    question_text: "",
-    options: [],
-    media: [],
-    reading_passage: "",
-    sub_questions: [],
-    blank_count: 0,
-  }),
+  data: derive(
+    {
+      question_type: "unknown",
+      scene: "",
+      grammar_focus: "",
+      target_level: "",
+      question_text: "",
+      options: [],
+      media: [],
+      reading_passage: "",
+      sub_questions: [],
+      blank_count: 0,
+    },
+    buildQuestionI18n()
+  ),
 
   observers: {
-    itemData: function (d: ItemData) {
-      if (d) this.setData(derive(d));
+    "itemData, locale": function (d: ItemData) {
+      if (d) this.setData(derive(d, this.data.i18n));
     },
   },
 
   lifetimes: {
     attached() {
       const d = this.properties.itemData as ItemData;
-      if (d) this.setData(derive(d));
+      if (d) this.setData(derive(d, this.data.i18n));
     },
   },
 
   methods: {
+    refreshI18n() {
+      this.setData({ i18n: buildQuestionI18n() });
+    },
+
     onAnswer(e: WechatMiniprogram.CustomEvent) {
       this.triggerEvent("answer", e.detail, { bubbles: true, composed: true });
     },

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 function captureComponent() {
   (globalThis as Record<string, unknown>).Component = (
@@ -18,7 +18,12 @@ describe("reading-comprehension fallback input", () => {
   beforeEach(() => {
     vi.resetModules();
     captureComponent();
+    (globalThis as Record<string, unknown>).Behavior = vi.fn((def) => def);
     delete (globalThis as Record<string, unknown>).__readingCompComponent;
+  });
+
+  afterEach(() => {
+    delete (globalThis as Record<string, unknown>).Behavior;
   });
 
   it("exposes mainAnswer state for single reading questions", async () => {

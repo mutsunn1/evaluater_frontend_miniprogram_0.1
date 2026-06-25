@@ -2,7 +2,7 @@
 <view class="nav-bar">
   <view class="capsule-space" style="height: {{layout.businessBarTop}}px;"></view>
   <view class="business-bar" style="height: {{layout.businessBarHeight}}px;">
-    <view class="profile-btn" bind:tap="onProfileTap" role="button" aria-label="用户画像">
+    <view class="profile-btn" bind:tap="onProfileTap" role="button" aria-label="{{i18n.openProfile}}">
       <text class="profile-close" wx:if="{{profileOpen}}">×</text>
       <view class="profile-symbol" wx:else>
         <view class="person-head"></view>
@@ -11,13 +11,21 @@
     </view>
 
     <view class="title-group">
-      <text class="nav-title">中文水平评测</text>
+      <text class="nav-title">{{i18n.appTitle}}</text>
       <text class="user-badge" wx:if="{{userId}}">{{userId}}</text>
     </view>
 
     <view class="nav-actions">
-      <view class="action-btn end" bind:tap="onEndTap" role="button">结束评测</view>
-      <view class="action-btn exit" bind:tap="onExitTap" role="button">退出</view>
+      <view
+        class="action-btn lang"
+        bind:tap="onLangTap"
+        role="button"
+        data-testid="language-switcher"
+      >
+        {{locale === 'en' ? i18n.langZh : i18n.langEn}}
+      </view>
+      <view class="action-btn end" bind:tap="onEndTap" role="button">{{i18n.endEvaluation}}</view>
+      <view class="action-btn exit" bind:tap="onExitTap" role="button">{{i18n.logout}}</view>
     </view>
   </view>
 </view>

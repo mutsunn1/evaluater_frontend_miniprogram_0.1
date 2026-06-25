@@ -7,7 +7,7 @@
       bind:tap="toggleAudio"
       disabled="{{audioError}}"
     >
-      {{audioError ? '音频加载失败' : (isPlaying ? '暂停' : '播放音频')}}
+      {{audioLabel}}
     </button>
     <text wx:if="{{audioError && asset.url}}" class="mpb-audio-error">{{asset.url}}</text>
   </view>

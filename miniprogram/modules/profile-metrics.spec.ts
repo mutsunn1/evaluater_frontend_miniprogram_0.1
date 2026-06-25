@@ -34,13 +34,13 @@ describe("profile metrics", () => {
       "listening",
       "speaking",
     ]);
-    expect(rows.map((row) => row.name)).toEqual([
-      "综合",
-      "词汇",
-      "语法",
-      "阅读",
-      "听力",
-      "口语",
+    expect(rows.map((row) => row.nameKey)).toEqual([
+      "hsk",
+      "vocabulary",
+      "grammar",
+      "reading",
+      "listening",
+      "speaking",
     ]);
     expect(rows.map((row) => row.colorKey)).toEqual([
       "blue",
@@ -69,7 +69,7 @@ describe("profile metrics", () => {
     );
     const listening = rows.find((row) => row.key === "listening");
     expect(listening).toBeDefined();
-    expect(listening?.name).toBe("听力");
+    expect(listening?.nameKey).toBe("listening");
     expect(listening?.colorKey).toBe("pink");
     // level 3 (≤6 branch → 3/6*100 = 50%)
     expect(listening?.display).toBe("50%");

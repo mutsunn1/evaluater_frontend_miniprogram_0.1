@@ -1,19 +1,43 @@
+import i18nBehavior from "../../behaviors/i18n";
+import { buildI18n } from "../../utils/i18n-data";
+
+const blankI18nMap = {
+  blankLabel: "chat.question.blankLabel",
+  fillBlank: "chat.question.fillBlank",
+  confirm: "chat.question.confirm",
+};
+
+function buildBlankI18n() {
+  return buildI18n(blankI18nMap);
+}
+
+interface BlankItem {
+  index: number;
+  label: string;
+}
+
 Component({
+  behaviors: [i18nBehavior],
+
   properties: {
     blankCount: { type: Number, value: 1 },
   },
 
   data: {
-    blanks: [] as number[],
+    blanks: [] as BlankItem[],
     answers: [] as string[],
     singleAnswer: "",
     canSubmit: false,
+    i18n: buildBlankI18n(),
   },
 
   observers: {
-    blankCount: function (n: number) {
+    "blankCount, locale": function (n: number) {
       if (n > 1) {
-        const blanks = Array.from({ length: n }, (_, i) => i);
+        const blanks: BlankItem[] = Array.from({ length: n }, (_, i) => ({
+          index: i,
+          label: this.t("chat.question.blankLabel", { n: i + 1 }),
+        }));
         this.setData({
           blanks,
           answers: new Array(n).fill(""),
@@ -25,7 +49,28 @@ Component({
     },
   },
 
+  lifetimes: {
+    attached() {
+      const n = (this.properties.blankCount as number) || 1;
+      if (n > 1) {
+        const blanks: BlankItem[] = Array.from({ length: n }, (_, i) => ({
+          index: i,
+          label: this.t("chat.question.blankLabel", { n: i + 1 }),
+        }));
+        this.setData({
+          blanks,
+          answers: new Array(n).fill(""),
+          canSubmit: false,
+        });
+      }
+    },
+  },
+
   methods: {
+    refreshI18n() {
+      this.setData({ i18n: buildBlankI18n() });
+    },
+
     onInput(e: WechatMiniprogram.InputEvent) {
       const idx = e.currentTarget.dataset.idx as number;
       const answers = [...this.data.answers];

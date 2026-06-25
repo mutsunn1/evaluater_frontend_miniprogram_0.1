@@ -4,48 +4,48 @@
   <view style="height: {{statusBarHeight}}px; background: #fff;"></view>
 
   <view class="report-container">
-    <view class="report-title">评测报告</view>
+    <view class="report-title">{{i18n.title}}</view>
 
     <view class="stats">
       <view class="stat-item">
         <text class="stat-value">{{result.total_items || 0}}</text>
-        <text class="stat-label">总题数</text>
+        <text class="stat-label">{{i18n.totalItems}}</text>
       </view>
       <view class="stat-item">
         <text class="stat-value">{{result.average_score || 0}}%</text>
-        <text class="stat-label">平均分</text>
+        <text class="stat-label">{{i18n.averageScore}}</text>
       </view>
     </view>
 
     <view class="section" wx:if="{{result.next_focus && result.next_focus.length}}">
-      <view class="section-title">建议关注</view>
+      <view class="section-title">{{i18n.nextFocus}}</view>
       <view class="tags">
         <text class="tag tag-focus" wx:for="{{result.next_focus}}" wx:key="*this">{{item}}</text>
       </view>
     </view>
 
     <view class="section" wx:if="{{result.stubborn_errors && result.stubborn_errors.length}}">
-      <view class="section-title">顽固错误</view>
+      <view class="section-title">{{i18n.stubbornErrors}}</view>
       <view class="tags">
         <text class="tag tag-error" wx:for="{{result.stubborn_errors}}" wx:key="*this">{{item}}</text>
       </view>
     </view>
 
     <view class="section" wx:if="{{result.improved_areas && result.improved_areas.length}}">
-      <view class="section-title">进步领域</view>
+      <view class="section-title">{{i18n.title}} - {{i18n.summary}}</view>
       <view class="tags">
         <text class="tag tag-good" wx:for="{{result.improved_areas}}" wx:key="*this">{{item}}</text>
       </view>
     </view>
 
     <view class="section" wx:if="{{result.summary}}">
-      <view class="section-title">AI 总结</view>
+      <view class="section-title">{{i18n.summary}}</view>
       <view class="summary-text">{{result.summary}}</view>
     </view>
 
     <view class="actions">
-      <button class="act-btn primary" bind:tap="handleNewSession">开始新评测</button>
-      <button class="act-btn secondary" bind:tap="handleBackHome">返回主页</button>
+      <button class="act-btn primary" bind:tap="handleNewSession">{{i18n.newSession}}</button>
+      <button class="act-btn secondary" bind:tap="handleBackHome">{{i18n.backHome}}</button>
     </view>
   </view>
 </view>

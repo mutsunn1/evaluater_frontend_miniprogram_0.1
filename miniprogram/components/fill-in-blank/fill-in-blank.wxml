@@ -2,10 +2,10 @@
 <view class="fib">
   <view wx:if="{{blankCount > 1}}" class="blanks">
     <view wx:for="{{blanks}}" wx:key="*this" class="blank-row">
-      <text class="blank-label">第{{index + 1}}空</text>
+      <text class="blank-label">{{item.label}}</text>
       <input
         class="blank-input"
-        placeholder="请输入答案"
+        placeholder="{{i18n.fillBlank}}"
         value="{{answers[index] || ''}}"
         data-idx="{{index}}"
         bind:input="onInput"
@@ -15,12 +15,12 @@
   <input
     wx:else
     class="blank-input single"
-    placeholder="请输入答案"
+    placeholder="{{i18n.fillBlank}}"
     value="{{singleAnswer}}"
     bind:input="onSingleInput"
   />
 
   <button class="confirm-btn" bind:tap="onConfirm" wx:if="{{canSubmit}}">
-    确认答案
+    {{i18n.confirm}}
   </button>
 </view>

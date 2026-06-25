@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const mockInnerAudioContext = {
   play: vi.fn(),
@@ -45,7 +45,12 @@ describe("speech-recorder upload button wiring", () => {
     vi.resetModules();
     setupWx();
     captureComponent();
+    (globalThis as Record<string, unknown>).Behavior = vi.fn((def) => def);
     delete (globalThis as Record<string, unknown>).__speechRecorderComponent;
+  });
+
+  afterEach(() => {
+    delete (globalThis as Record<string, unknown>).Behavior;
   });
 
   it("exposes uploadRecording method that can be bound to a button", async () => {
@@ -73,9 +78,17 @@ describe("speech-recorder upload button wiring", () => {
 
     const component = {
       properties: { sessionId: "s1", questionItemId: 1 },
-      data: { elapsedSeconds: 3 },
+      data: {
+        elapsedSeconds: 3,
+        i18n: {
+          uploading: "chat.speech.uploading",
+          transcribeFailed: "chat.speech.transcribeFailed",
+          uploadFailed: "chat.speech.uploadFailed",
+        },
+      },
       setData: vi.fn(),
       triggerEvent: vi.fn(),
+      t: (key: string) => key,
       _recordedPath: "/tmp/rec.mp3",
     };
 

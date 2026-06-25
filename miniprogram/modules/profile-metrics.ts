@@ -1,7 +1,7 @@
 import type { UserProfileData } from "../types";
 
 export interface ProfileSkillRow {
-  name: string;
+  nameKey: string;
   key:
     | "overall"
     | "vocabulary"
@@ -12,6 +12,7 @@ export interface ProfileSkillRow {
   colorKey: "blue" | "purple" | "green" | "orange" | "pink" | "cyan";
   pct: number;
   display: string;
+  displayName?: string;
 }
 
 function toPct(value: number | undefined): number {
@@ -43,27 +44,37 @@ export function buildProfileSkillRows(
     Omit<ProfileSkillRow, "pct" | "display"> & { value: number | undefined }
   > = [
     {
-      name: "综合",
+      nameKey: "hsk",
       key: "overall",
       colorKey: "blue",
       value: levels.hsk || profile.hsk_level,
     },
     {
-      name: "词汇",
+      nameKey: "vocabulary",
       key: "vocabulary",
       colorKey: "purple",
       value: levels.vocabulary,
     },
-    { name: "语法", key: "grammar", colorKey: "green", value: levels.grammar },
-    { name: "阅读", key: "reading", colorKey: "orange", value: levels.reading },
     {
-      name: "听力",
+      nameKey: "grammar",
+      key: "grammar",
+      colorKey: "green",
+      value: levels.grammar,
+    },
+    {
+      nameKey: "reading",
+      key: "reading",
+      colorKey: "orange",
+      value: levels.reading,
+    },
+    {
+      nameKey: "listening",
       key: "listening",
       colorKey: "pink",
       value: levels.listening,
     },
     {
-      name: "口语",
+      nameKey: "speaking",
       key: "speaking",
       colorKey: "cyan",
       value: levels.speaking,
@@ -73,7 +84,7 @@ export function buildProfileSkillRows(
   return rows.map((row) => {
     const pct = toPct(row.value);
     return {
-      name: row.name,
+      nameKey: row.nameKey,
       key: row.key,
       colorKey: row.colorKey,
       pct,

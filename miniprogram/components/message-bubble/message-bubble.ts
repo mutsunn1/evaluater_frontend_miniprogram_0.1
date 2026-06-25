@@ -5,7 +5,21 @@ import {
   resolveResponseMode,
 } from "../../modules/response-utils";
 
+import i18nBehavior from "../../behaviors/i18n";
+import { buildI18n } from "../../utils/i18n-data";
+
+const messageI18nMap = {
+  loadingText: "chat.loading.text",
+  submitAll: "chat.question.submitAll",
+};
+
+function buildMessageI18n() {
+  return buildI18n(messageI18nMap);
+}
+
 Component({
+  behaviors: [i18nBehavior],
+
   properties: {
     message: { type: Object, value: {} as ChatMessage },
     showTime: { type: Boolean, value: true },
@@ -14,12 +28,13 @@ Component({
 
   data: {
     isTextRole: false,
+    displayContent: "",
     batchAnswers: {} as Record<number, string>,
     canBatchSubmit: false,
     formattedTime: "",
-    // Per-item resolved response modes for batch questions
     itemModes: [] as string[],
     skipOptions: [] as Array<QuestionOption | undefined>,
+    i18n: buildMessageI18n(),
   },
 
   observers: {
@@ -33,8 +48,8 @@ Component({
         });
       }
     },
-    "message.role": function (role: string) {
-      this.setData({ isTextRole: role === "system" || role === "cold_start" });
+    "message.role, message.content, message.source, locale": function () {
+      this.updateDisplayContent();
     },
     "message.id": function () {
       this.setData({
@@ -64,12 +79,25 @@ Component({
         }
         updates.isTextRole = msg.role === "system" || msg.role === "cold_start";
         this.setData(updates);
+        this.updateDisplayContent();
         this.resolveItemModes();
       }
     },
   },
 
   methods: {
+    refreshI18n() {
+      this.setData({ i18n: buildMessageI18n() });
+    },
+
+    updateDisplayContent() {
+      const msg = this.properties.message as ChatMessage;
+      if (!msg) return;
+      const shouldTranslate = msg.source === "system";
+      const content = shouldTranslate ? this.t(msg.content) : msg.content;
+      this.setData({ displayContent: content });
+    },
+
     resolveItemModes() {
       const msg = this.properties.message as ChatMessage;
       const qs = msg.batch_questions || [];

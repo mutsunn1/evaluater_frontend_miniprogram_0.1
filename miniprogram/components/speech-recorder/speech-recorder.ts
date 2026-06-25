@@ -1,8 +1,34 @@
 import { uploadSpeechRecording } from "../../modules/api-adapter";
+import i18nBehavior from "../../behaviors/i18n";
+import { buildI18n } from "../../utils/i18n-data";
+
+const speechI18nMap = {
+  hint: "chat.speech.hint",
+  start: "chat.speech.start",
+  recording: "chat.speech.recording",
+  stop: "chat.speech.stop",
+  recorded: "chat.speech.recorded",
+  play: "chat.speech.play",
+  pause: "chat.speech.pause",
+  reRecord: "chat.speech.reRecord",
+  upload: "chat.speech.upload",
+  uploading: "chat.speech.uploading",
+  transcriptTitle: "chat.speech.transcriptTitle",
+  confirm: "chat.speech.confirm",
+  micError: "chat.speech.micError",
+  transcribeFailed: "chat.speech.transcribeFailed",
+  uploadFailed: "chat.speech.uploadFailed",
+};
+
+function buildSpeechI18n() {
+  return buildI18n(speechI18nMap);
+}
 
 const MAX_SECONDS = 60;
 
 Component({
+  behaviors: [i18nBehavior],
+
   properties: {
     sessionId: { type: String, value: "" },
     questionItemId: { type: Number, value: 0 },
@@ -22,6 +48,7 @@ Component({
     error: "",
     assetId: "",
     isPlaying: false,
+    i18n: buildSpeechI18n(),
   },
 
   lifetimes: {
@@ -35,6 +62,10 @@ Component({
       const m = Math.floor(s / 60);
       const sec = s % 60;
       return `${m}:${String(sec).padStart(2, "0")}`;
+    },
+
+    refreshI18n() {
+      this.setData({ i18n: buildSpeechI18n() });
     },
 
     startRecording() {
@@ -71,7 +102,10 @@ Component({
           clearInterval(this._elapsedTimer);
           this._elapsedTimer = null;
         }
-        this.setData({ state: "failed", error: err.errMsg || "录音失败" });
+        this.setData({
+          state: "failed",
+          error: err.errMsg || this.data.i18n.micError,
+        });
       });
 
       recorderManager.start({
@@ -127,7 +161,7 @@ Component({
 
     async uploadRecording() {
       if (!this._recordedPath) return;
-      wx.showLoading({ title: "转写中..." });
+      wx.showLoading({ title: this.data.i18n.uploading });
       try {
         // wx.uploadFile streams the temp file directly as multipart, so we do
         // NOT need to read it into memory or build a Blob (which does not exist
@@ -153,10 +187,14 @@ Component({
             assetId: result.asset_id,
           });
         } else {
-          this.setData({ state: "failed", error: result.error || "转写失败" });
+          this.setData({
+            state: "failed",
+            error: result.error || this.data.i18n.transcribeFailed,
+          });
         }
       } catch (e: unknown) {
-        const msg = e instanceof Error ? e.message : "上传失败";
+        const msg =
+          e instanceof Error ? e.message : this.data.i18n.uploadFailed;
         this.setData({ state: "failed", error: msg });
       } finally {
         wx.hideLoading();

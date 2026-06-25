@@ -2,7 +2,7 @@
 <view class="hrp" data-hanzi-writer-target="true" data-testid="handwriting-canvas">
   <view class="hrp-canvas">
     <text class="hrp-icon">✍️</text>
-    <text class="hrp-label">手写作答</text>
+    <text class="hrp-label">{{i18n.area}}</text>
   </view>
-  <text class="hrp-hint">暂不支持自动评分</text>
+  <text class="hrp-hint">{{i18n.notScored}}</text>
 </view>

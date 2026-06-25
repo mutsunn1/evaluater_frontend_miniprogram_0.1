@@ -8,8 +8,26 @@ import {
 import { createClientId } from "../../modules/id";
 import { getUserId } from "../../modules/auth-manager";
 import type { SessionResult } from "../../types";
+import i18nBehavior from "../../behaviors/i18n";
+import { buildI18n } from "../../utils/i18n-data";
+
+const reportI18nMap = {
+  title: "report.title",
+  totalItems: "report.totalItems",
+  averageScore: "report.averageScore",
+  nextFocus: "report.nextFocus",
+  stubbornErrors: "report.stubbornErrors",
+  summary: "report.summary",
+  newSession: "report.newSession",
+  backHome: "report.backHome",
+};
+
+function buildReportI18n() {
+  return buildI18n(reportI18nMap);
+}
 
 Page({
+  behaviors: [i18nBehavior],
   data: {
     statusBarHeight: 0,
     result: {
@@ -24,6 +42,7 @@ Page({
       hsk_adjustment: "",
       summary: "",
     } as SessionResult,
+    i18n: buildReportI18n(),
   },
 
   onLoad() {
@@ -44,6 +63,10 @@ Page({
     }
   },
 
+  refreshI18n() {
+    this.setData({ i18n: buildReportI18n() });
+  },
+
   async handleNewSession() {
     const userId = getUserId();
     if (!userId) {
@@ -58,9 +81,10 @@ Page({
       addMessage({
         id: createClientId(),
         role: "system",
+        source: "system",
         content: result.needs_cold_start
-          ? "欢迎！系统将通过几轮问答了解您的中文水平。"
-          : `欢迎回来！当前 HSK 等级为 ${result.hsk_level} 级。`,
+          ? "chat.welcome.coldStart"
+          : "chat.welcome.assessment",
         timestamp: new Date().toISOString(),
       });
       wx.redirectTo({ url: "/pages/chat/chat" });

@@ -76,6 +76,7 @@ export interface ItemData {
 export interface ChatMessage {
   id: string;
   role: "system" | "user" | "question" | "feedback" | "cold_start";
+  source?: "llm" | "system" | "user";
   content: string;
   item_data?: ItemData;
   batch_questions?: ItemData[];

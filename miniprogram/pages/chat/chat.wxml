@@ -7,6 +7,7 @@
     bind:end="onEndTap"
     bind:exit="onExitTap"
     bind:profiletoggle="onProfileToggle"
+    bind:langchange="onLangChange"
   />
 
   <!-- Profile drawer (slides down from nav, compresses chat) -->
@@ -38,7 +39,7 @@
 
       <!-- Empty state -->
       <view class="empty-chat" wx:if="{{messages.length === 0}}">
-        <text class="empty-text">{{isColdStart ? '正在准备冷启动...' : '正在准备评测...'}}</text>
+        <text class="empty-text">{{isColdStart ? i18n.loadingColdStart : i18n.loadingGenerating}}</text>
       </view>
 
       <!-- Live thinking indicator during loading -->
@@ -63,19 +64,19 @@
       <view class="input-row" wx:if="{{isColdStart && isWaitingAnswer}}">
         <input
           class="text-input"
-          placeholder="请简要回答..."
+          placeholder="{{i18n.placeholderColdStart}}"
           value="{{userInput}}"
           bind:input="onInputChange"
           disabled="{{isLoading}}"
           confirm-type="send"
           bind:confirm="onSendAnswer"
         />
-        <button class="send-btn" bind:tap="onSendAnswer" disabled="{{!userInput || isLoading}}">发送</button>
+        <button class="send-btn" bind:tap="onSendAnswer" disabled="{{!userInput || isLoading}}">{{i18n.commonSend}}</button>
       </view>
 
       <!-- Normal input when waiting for answer -->
       <view class="input-row" wx:elif="{{isWaitingAnswer && !isLoading}}">
-        <view class="text-input disabled">请在上方题目中作答</view>
+        <view class="text-input disabled">{{i18n.answerInQuestion}}</view>
       </view>
 
       <!-- Loading state -->
@@ -85,13 +86,13 @@
 
       <!-- Idle state -->
       <view class="loading-hint" wx:else>
-        <text wx:if="{{messages.length > 0}}">等待出题中...</text>
+        <text wx:if="{{messages.length > 0}}">{{i18n.loadingNextRound}}</text>
       </view>
 
       <!-- Error banner -->
       <view class="error-bar" wx:if="{{error}}">
         <text class="error-text">{{error}}</text>
-        <button class="retry-btn" bind:tap="onRetry">重试</button>
+        <button class="retry-btn" bind:tap="onRetry">{{i18n.commonRetry}}</button>
       </view>
     </view>
   </view>
@@ -109,13 +110,13 @@
   <!-- Confirm dialogs -->
   <view class="modal-mask" wx:if="{{showEndConfirm || showExitConfirm}}" bind:tap="onCancelConfirm">
     <view class="modal-card" catchtap>
-      <view class="modal-title">{{showEndConfirm ? '结束评测' : '退出'}}</view>
+      <view class="modal-title">{{showEndConfirm ? i18n.commonEndEvaluation : i18n.commonLogout}}</view>
       <view class="modal-body">
-        {{showEndConfirm ? '确定要结束当前评测吗？结束后将生成评测报告。' : '确定要退出吗？当前评测进度将丢失。'}}
+        {{showEndConfirm ? i18n.endConfirmBody : i18n.exitConfirmBody}}
       </view>
       <view class="modal-actions">
-        <button class="modal-btn cancel" bind:tap="onCancelConfirm">取消</button>
-        <button class="modal-btn confirm" bind:tap="onConfirmAction">{{showEndConfirm ? '结束' : '退出'}}</button>
+        <button class="modal-btn cancel" bind:tap="onCancelConfirm">{{i18n.commonCancel}}</button>
+        <button class="modal-btn confirm" bind:tap="onConfirmAction">{{showEndConfirm ? i18n.commonEndEvaluation : i18n.commonLogout}}</button>
       </view>
     </view>
   </view>
