@@ -75,6 +75,14 @@ describe("api-adapter — non-streaming", () => {
     vi.restoreAllMocks();
   });
 
+  it("createSession URL 携带 locale query 参数", async () => {
+    setupWx({ session_id: "s1", user_id: "u1", hsk_level: 3 });
+    const { createSession } = await import("./api-adapter");
+    await createSession("u1");
+    const opts = mockWxRequest.mock.calls[0][0];
+    expect(opts.url).toContain("locale=en");
+  });
+
   it("createSession calls POST with user_id query param", async () => {
     setupWx({ session_id: "s1", user_id: "u1", hsk_level: 3 });
     const { createSession } = await import("./api-adapter");
@@ -83,6 +91,7 @@ describe("api-adapter — non-streaming", () => {
     const opts = mockWxRequest.mock.calls[0][0];
     expect(opts.url).toContain("/api/v1/sessions");
     expect(opts.url).toContain("user_id=u1");
+    expect(opts.url).toContain("locale=en");
     expect(opts.method).toBe("POST");
   });
 
@@ -137,6 +146,81 @@ describe("api-adapter — streaming", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.resetModules();
+  });
+
+  it("streamQuestion URL 携带 locale query 参数", async () => {
+    let capturedUrl = "";
+    vi.doMock("./sse-parser", () => ({
+      startSseRequest(
+        opts: { url: string },
+        config: {
+          onEvent?: (
+            type: string,
+            data: Record<string, unknown>
+          ) => boolean | void;
+          onComplete?: () => void;
+        }
+      ) {
+        capturedUrl = opts.url;
+        queueMicrotask(() => {
+          config.onEvent?.("question", {
+            question: {
+              question_type: "multiple_choice",
+              question_text: "Q1",
+              scene: "",
+              grammar_focus: "",
+              target_level: "",
+            },
+            batch_id: "b1",
+            batch_index: 0,
+            skill_dimension: "vocabulary",
+          });
+          config.onComplete?.();
+        });
+        return { abort() {} };
+      },
+    }));
+    const { streamQuestion } = await import("./api-adapter");
+    await streamQuestion("s1", vi.fn());
+    expect(capturedUrl).toContain("locale=en");
+  });
+
+  it("streamQuestion URL 携带 locale 和 request_id 参数", async () => {
+    let capturedUrl = "";
+    vi.doMock("./sse-parser", () => ({
+      startSseRequest(
+        opts: { url: string },
+        config: {
+          onEvent?: (
+            type: string,
+            data: Record<string, unknown>
+          ) => boolean | void;
+          onComplete?: () => void;
+        }
+      ) {
+        capturedUrl = opts.url;
+        queueMicrotask(() => {
+          config.onEvent?.("question", {
+            question: {
+              question_type: "multiple_choice",
+              question_text: "Q1",
+              scene: "",
+              grammar_focus: "",
+              target_level: "",
+            },
+            batch_id: "b1",
+            batch_index: 0,
+            skill_dimension: "vocabulary",
+          });
+          config.onComplete?.();
+        });
+        return { abort() {} };
+      },
+    }));
+    const { streamQuestion } = await import("./api-adapter");
+    await streamQuestion("s1", vi.fn(), { requestId: "req-123" });
+    expect(capturedUrl).toContain("request_id=req-123");
+    expect(capturedUrl).toContain("locale=en");
   });
 
   it("streamQuestion collects multiple question events", async () => {
@@ -533,6 +617,104 @@ describe("api-adapter — streaming", () => {
     expect(result.results).toHaveLength(1);
   });
 
+  it("streamSubmitAnswer URL 携带 locale query 参数", async () => {
+    let capturedUrl = "";
+    vi.doMock("./sse-parser", () => ({
+      startSseRequest(
+        opts: { url: string },
+        config: {
+          onEvent?: (
+            type: string,
+            data: Record<string, unknown>
+          ) => boolean | void;
+          onComplete?: () => void;
+        }
+      ) {
+        capturedUrl = opts.url;
+        queueMicrotask(() => {
+          config.onEvent?.("answer", {
+            item_id: 1,
+            is_correct: true,
+            feedback: "good",
+            confidence: 0.9,
+            accuracy: 0.8,
+          });
+          config.onComplete?.();
+        });
+        return { abort() {} };
+      },
+    }));
+    const { streamSubmitAnswer } = await import("./api-adapter");
+    await streamSubmitAnswer("s1", "A", vi.fn());
+    expect(capturedUrl).toContain("locale=en");
+  });
+
+  it("batchSubmitAnswer URL 携带 locale query 参数", async () => {
+    let capturedUrl = "";
+    vi.doMock("./sse-parser", () => ({
+      startSseRequest(
+        opts: { url: string },
+        config: {
+          onEvent?: (
+            type: string,
+            data: Record<string, unknown>
+          ) => boolean | void;
+          onComplete?: () => void;
+        }
+      ) {
+        capturedUrl = opts.url;
+        queueMicrotask(() => {
+          config.onEvent?.("answer", {
+            results: [{ item_id: 1 }],
+            confidence: 0.9,
+            accuracy: 0.85,
+            auto_stop: false,
+          });
+          config.onComplete?.();
+        });
+        return { abort() {} };
+      },
+    }));
+    const { batchSubmitAnswer } = await import("./api-adapter");
+    await batchSubmitAnswer(
+      "s1",
+      [{ question_index: 0, answer: "A" }],
+      vi.fn()
+    );
+    expect(capturedUrl).toContain("locale=en");
+  });
+
+  it("streamColdStart URL 携带 locale query 参数", async () => {
+    let capturedUrl = "";
+    vi.doMock("./sse-parser", () => ({
+      startSseRequest(
+        opts: { url: string },
+        config: {
+          onEvent?: (
+            type: string,
+            data: Record<string, unknown>
+          ) => boolean | void;
+          onComplete?: () => void;
+        }
+      ) {
+        capturedUrl = opts.url;
+        queueMicrotask(() => {
+          config.onEvent?.("question", {
+            cold_start: true,
+            round: 1,
+            label: "intro",
+            question: "Tell me...",
+          });
+          config.onComplete?.();
+        });
+        return { abort() {} };
+      },
+    }));
+    const { streamColdStart } = await import("./api-adapter");
+    await streamColdStart("s1", vi.fn());
+    expect(capturedUrl).toContain("locale=en");
+  });
+
   it("streamSubmitAnswer resolves with answer event", async () => {
     mockSseParser([
       {
@@ -630,5 +812,88 @@ describe("api-adapter — streaming", () => {
     await expect(
       streamQuestion("s1", vi.fn(), { signal: { aborted: true } })
     ).rejects.toThrow(/aborted/);
+  });
+
+  it("streamQuestion falls back to multiple_choice when question_type is missing but response_mode is choice", async () => {
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            response_mode: "choice",
+            question_text: "请选择语法正确的句子。",
+            options: ["A. 我把作业做完了。", "B. 我做完把作业了。"],
+            scene: "选择语法正确的句子",
+            grammar_focus: "把字句结构",
+            target_level: "HSK4",
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "grammar",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn());
+
+    expect(result.questions[0].question_type).toBe("multiple_choice");
+    expect(result.questions[0].response_mode).toBe("choice");
+  });
+
+  it("streamQuestion normalizes question_type casing and whitespace", async () => {
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            question_type: "  Multiple_Choice  ",
+            question_text: "Q",
+            scene: "",
+            grammar_focus: "",
+            target_level: "",
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "vocabulary",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn());
+
+    expect(result.questions[0].question_type).toBe("multiple_choice");
+  });
+
+  it("streamQuestion unwraps event_type/event_data wrapper inside question field", async () => {
+    mockSseParser([
+      {
+        type: "question",
+        data: {
+          question: {
+            event_type: "question",
+            event_data: {
+              question_type: "multiple_choice",
+              question_text: "wrapped",
+              options: ["A", "B"],
+              scene: "s",
+              grammar_focus: "g",
+              target_level: "HSK3",
+            },
+          },
+          batch_id: "b1",
+          batch_index: 0,
+          skill_dimension: "grammar",
+        },
+      },
+    ]);
+
+    const { streamQuestion } = await import("./api-adapter");
+    const result = await streamQuestion("s1", vi.fn());
+
+    expect(result.questions[0].question_type).toBe("multiple_choice");
+    expect(result.questions[0].question_text).toBe("wrapped");
+    expect(result.questions[0].options).toHaveLength(2);
   });
 });

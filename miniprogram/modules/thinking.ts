@@ -5,18 +5,28 @@ type ThinkingLike = {
 };
 
 const HIGH_VALUE_TITLE_KEYWORDS = [
+  "Question Summary",
+  "Question Generation Summary",
+  "Question Planning Summary",
+  "Agent Analysis",
   "题目摘要",
   "题目生成摘要",
   "出题规划摘要",
   "智能体分析",
 ];
 const HIGH_VALUE_OUTPUT_KEYWORDS = [
+  "This question focuses on",
   "本题围绕",
   "正在选择适合",
   "综合观察",
   "评分结果",
 ];
-const LOW_VALUE_OUTPUT_KEYWORDS = ["题目生成完成", "题目质量检查完成"];
+const LOW_VALUE_OUTPUT_KEYWORDS = [
+  "Question generated",
+  "Question quality check complete",
+  "题目生成完成",
+  "题目质量检查完成",
+];
 
 function getTitle(step: ThinkingLike): string {
   return step.label || step.agent;

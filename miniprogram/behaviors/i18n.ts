@@ -4,6 +4,9 @@ import zh from "../locales/zh";
 
 export const i18n = createI18n({ en, zh });
 
+// 让非 behavior/页面代码也能读取当前 locale（如 api-adapter）
+(globalThis as Record<string, unknown>).__evaluater_i18n__ = i18n;
+
 function getCurrentPagesSafe() {
   try {
     return getCurrentPages();

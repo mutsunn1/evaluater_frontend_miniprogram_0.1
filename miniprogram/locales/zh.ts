@@ -42,6 +42,24 @@ export default {
     thinking: {
       title: "思考过程",
       viewAll: "查看全部 {count} 条思考过程",
+      labels: {
+        planning: "Question Planning",
+        vocabularyQuestion: "Vocabulary Question",
+        grammarQuestion: "Grammar Question",
+        readingQuestion: "Reading Question",
+        listeningQuestion: "Listening Question",
+        speakingQuestion: "Speaking Question",
+        agentAnalysis: "Agent Analysis",
+        compensation: "Question Compensation",
+        questionSummary: "Question Summary",
+        questionGenerationSummary: "Question Generation Summary",
+        qaAgent: "Quality Check Agent",
+        masterAgent: "Master Agent",
+        coldStartAgent: "Cold Start Agent",
+        behaviorObserver: "Behavior Observer",
+        gradingAgent: "Grading Agent",
+        system: "System",
+      },
     },
     handwriting: {
       area: "手写区域",
@@ -67,20 +85,13 @@ export default {
       transcriptTitle: "转写结果（只读核对）",
       confirm: "确认提交",
       retryUpload: "重试上传",
-      micError: "无法访问麦克风，请检查权限设置",
+      micError: "无法访问麦克风，请检查浏览器权限设置",
       missingSession: "缺少会话ID，无法上传",
       transcribeFailed: "转写失败，请重试",
       uploadFailed: "上传失败，请检查网络后重试",
     },
     answerInQuestion: "请在上方题目中作答",
-    endConfirm: {
-      body: "确定要结束当前评测吗？结束后将生成评测报告。",
-    },
-    exitConfirm: {
-      body: "确定要退出吗？当前评测进度将丢失。",
-    },
     loading: {
-      text: "加载中...",
       generating: "正在生成题目，请稍候...",
       coldStart: "正在准备冷启动问题...",
       analyzing: "正在分析你的回答...",
@@ -95,6 +106,20 @@ export default {
       correct: "回答正确！",
       incorrect: "回答不正确。",
       recorded: "回答已记录。",
+      incorrectWithAnswer: "回答不正确。正确答案是 {answer}。",
+      incorrectTrueFalse: "回答不正确。正确答案是{answer}。",
+      skipModality: {
+        listening: "已跳过本题。本轮不再出听力题。",
+        speaking: "已跳过本题。本轮不再出口语题。",
+        generic: "已跳过本题。本轮不再出此类题目。",
+      },
+      received: {
+        speech: "已收到口语回答。",
+        handwriting: "已收到手写回答（暂不支持自动评分）。",
+        upload: "已收到上传文件（暂不支持自动评分）。",
+      },
+      speechUnavailable: "口语评分暂时不可用，请稍后重试。",
+      emptySpeech: "未检测到有效语音内容，请重新录制。",
     },
     coldStart: {
       complete:
@@ -102,6 +127,51 @@ export default {
       completeFallback: "冷启动评测完成，即将进入正式评测。",
       questionFailed: "冷启动问题获取失败",
       answerFailed: "冷启动答案提交失败",
+      feedback: {
+        recorded: "第 {round} 轮作答已记录。",
+      },
+      labels: {
+        background: "背景了解",
+        dailyExpression: "日常表达",
+        stressTest: "难度探测（基础）",
+        boundaryCheckOne: "边界确认（一）",
+        boundaryCheckTwo: "边界确认（二）",
+      },
+      questions: {
+        background:
+          "你好！欢迎来到中文水平评测系统。在开始正式评测之前，我需要先了解一些你的背景信息。请用中文回答。\n1. 你的母语是什么？\n2. 你学习中文多久了？\n3. 你学习中文主要是为了什么？（考试、工作、兴趣……都可以）\n简单说几句就行。",
+        dailyExpression:
+          "谢谢。我想了解一下你的日常表达能力。\n请用中文描述一下你昨天做了什么。随便选一两件事说说就好，不用很长。",
+        stressTest:
+          "很好。接下来我出一个小题目：\n假设你正在外面，突然下起了大雨，你忘了带伞。\n请用中文说说你会怎么办。试着用“因为……所以……”这个结构。",
+        boundaryCheckOne:
+          "最后一个问题。\n有人觉得手机让人的生活变得更孤独了，也有人觉得手机让生活更丰富了。\n你同意哪一边？请简单说说你的想法。",
+        boundaryCheckTwo:
+          "再确认最后一个边界问题。\n如果你需要向别人解释一个计划改变的原因，同时提出新的安排，你会怎么说？请用中文说两三句话。",
+        scenario: {
+          study:
+            "假设你刚到学校，需要向老师说明你今天为什么迟到。请用中文说一小段话。",
+          work: "假设你今天要和同事确认一个任务，请用中文说说你会怎么表达。",
+          travel: "假设你在饭店点菜，但服务员说你想点的菜没有了。你会怎么说？",
+          fallback: "请用中文说说你昨天做了什么，尽量说完整句子。",
+        },
+        stressTestScenario: {
+          study:
+            "如果老师说你明天之前必须补交一份材料，但是你还没准备好，你会怎么说明原因并请求帮助？",
+          work: "如果同事临时改变计划，导致你不能按时完成任务，你会怎么说明原因并提出解决办法？",
+          travel:
+            "如果你订的房间没有了，前台给你换了一个更贵的房间，你会怎么说明情况并请求解决？",
+          fallback:
+            "如果你和朋友约好见面，但是突然下雨了，你会怎么说明情况并安排下一步？",
+        },
+      },
+      thinking: {
+        background: "分析用户背景中的母语线索和学习动机。",
+        dailyExpression: "分析用户的句式复杂度、词汇量和表达的流畅度。",
+        stressTest: "评估用户对因果复句的掌握程度和叙述能力。",
+        boundaryCheckOne: "通过抽象话题和观点表达，探测用户语言能力上限。",
+        boundaryCheckTwo: "确认相邻 HSK 等级边界和复杂表达稳定性。",
+      },
     },
     answer: {
       failed: "提交答案失败",
@@ -114,9 +184,6 @@ export default {
     },
     question: {
       number: "第{n}题",
-      scene: "场景",
-      grammar: "语法",
-      unsupported: "不支持的问题类型",
       trueFalse: {
         true: "正确",
         false: "错误",

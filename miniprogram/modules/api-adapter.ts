@@ -1,6 +1,7 @@
 import { startSseRequest } from "./sse-parser";
 import { toThinkingSteps } from "./session-utils";
 import { API_BASE_URL, assertApiUrlAllowed } from "./config";
+import i18nBehavior from "../behaviors/i18n";
 import type {
   ItemData,
   ThinkingStep,
@@ -11,6 +12,14 @@ import type {
 } from "../types";
 
 const BASE_URL = API_BASE_URL;
+
+function getLocale(): string {
+  // 优先从 behavior 暴露的 i18n 实例读取；测试环境直接 import behavior 会得到 plain object，
+  // 但它 methods 中持有的闭包 i18n 在真实运行时有效。这里通过全局变量兜底兼容测试。
+  const globalI18n = (globalThis as Record<string, unknown>)
+    .__evaluater_i18n__ as { getLocale?: () => string } | undefined;
+  return globalI18n?.getLocale?.() || "en";
+}
 
 // ---- wx.request Promise wrapper for non-streaming calls ----
 
@@ -58,7 +67,7 @@ export function createSession(userId: string): Promise<{
   needs_cold_start?: boolean;
 }> {
   return request({
-    url: `${BASE_URL}/api/v1/sessions?user_id=${encodeURIComponent(userId)}`,
+    url: `${BASE_URL}/api/v1/sessions?user_id=${encodeURIComponent(userId)}&locale=${encodeURIComponent(getLocale())}`,
     method: "POST",
   });
 }
@@ -156,8 +165,11 @@ function normalizeQuestionType(
   value: unknown,
   question: Record<string, unknown>
 ): ItemData["question_type"] {
-  const raw = String(value || "").trim();
-  if (raw === "single" || raw === "single_choice") return "multiple_choice";
+  const raw = String(value || "")
+    .trim()
+    .toLowerCase();
+  if (raw === "single" || raw === "single_choice" || raw === "choice")
+    return "multiple_choice";
   if (raw === "multiple" || raw === "multi_choice") return "multiple_select";
   if (raw === "judge" || raw === "true_or_false") return "true_false";
   if (raw === "blank" || raw === "fill" || raw === "short_answer")
@@ -300,17 +312,50 @@ function normalizeStreamQuestion(
   rawQuestion: Record<string, unknown>,
   eventData: Record<string, unknown>
 ): ItemData {
-  const questionType = normalizeQuestionType(
+  // 兼容 backend 偶尔把题目包在 event_type/event_data 里的情况
+  if (
+    rawQuestion.event_type === "question" &&
+    rawQuestion.event_data &&
+    typeof rawQuestion.event_data === "object"
+  ) {
+    rawQuestion = rawQuestion.event_data as Record<string, unknown>;
+  }
+
+  let questionType = normalizeQuestionType(
     rawQuestion.question_type || rawQuestion.type,
     rawQuestion
   );
+  let responseMode = normalizeResponseMode(
+    rawQuestion.response_mode,
+    questionType
+  );
+
+  // 兜底推断：当题型缺失/无法识别时，根据作答方式和题目结构推断最合理的题型
+  if (questionType === "unknown") {
+    if (responseMode === "choice") {
+      questionType = "multiple_choice";
+    } else if (responseMode === "speech") {
+      questionType = "speaking_response";
+    } else if (
+      Array.isArray(rawQuestion.options) &&
+      rawQuestion.options.length > 0
+    ) {
+      questionType = "multiple_choice";
+    } else if (rawQuestion.reading_passage || rawQuestion.sub_questions) {
+      questionType = "reading_comprehension";
+    } else {
+      questionType = "fill_in_blank";
+    }
+    responseMode = normalizeResponseMode(
+      rawQuestion.response_mode,
+      questionType
+    );
+  }
+
   return {
     ...rawQuestion,
     question_type: questionType,
-    response_mode: normalizeResponseMode(
-      rawQuestion.response_mode,
-      questionType
-    ),
+    response_mode: responseMode,
     media: normalizeMedia(rawQuestion.media),
     options: normalizeOptions(rawQuestion.options),
     scene: String(rawQuestion.scene || ""),
@@ -348,7 +393,6 @@ function streamRequest<T>(
       return;
     }
 
-    const rawSteps: { agent: string; label: string; output: string }[] = [];
     let resolved = false;
 
     startSseRequest(
@@ -362,14 +406,17 @@ function streamRequest<T>(
         signal: opts?.signal,
         onEvent(eventType, data) {
           if (eventType === "thinking") {
-            rawSteps.push({
-              agent: (data.agent as string) || "",
-              label: (data.label as string) || "",
-              output: (data.output as string) || "",
-            });
-            const steps = toThinkingSteps(rawSteps);
+            // 后端已对 planner 流式输出按窗口聚合并经过 thinking_coordinator
+            // 过滤摘要，每个 thinking 事件都是独立、可用的摘要，直接推送。
+            const steps = toThinkingSteps([
+              {
+                agent: (data.agent as string) || "",
+                label: (data.label as string) || "",
+                output: (data.output as string) || "",
+              },
+            ]);
             if (steps.length > 0) {
-              onThinking(steps[steps.length - 1]);
+              onThinking(steps[0]);
             }
           } else if (eventType === resolveOn) {
             resolved = true;
@@ -413,8 +460,11 @@ export function streamQuestion(
 ): Promise<{ questions: ItemData[]; batch_id: string }> {
   const requestId = opts?.requestId || "";
   let url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/question`;
+  const locale = getLocale();
   if (requestId) {
-    url += `?request_id=${encodeURIComponent(requestId)}`;
+    url += `?request_id=${encodeURIComponent(requestId)}&locale=${encodeURIComponent(locale)}`;
+  } else {
+    url += `?locale=${encodeURIComponent(locale)}`;
   }
 
   return new Promise((resolve, reject) => {
@@ -426,7 +476,6 @@ export function streamQuestion(
 
     const questions: ItemData[] = [];
     let batchId = "";
-    const rawSteps: { agent: string; label: string; output: string }[] = [];
     let resolved = false;
 
     startSseRequest(
@@ -435,14 +484,17 @@ export function streamQuestion(
         signal: opts?.signal,
         onEvent(eventType, data) {
           if (eventType === "thinking") {
-            rawSteps.push({
-              agent: (data.agent as string) || "",
-              label: (data.label as string) || "",
-              output: (data.output as string) || "",
-            });
-            const steps = toThinkingSteps(rawSteps);
+            // 后端已对 planner 流式输出按窗口聚合并经过 thinking_coordinator
+            // 过滤摘要，每个 thinking 事件都是独立、可用的摘要，直接推送。
+            const steps = toThinkingSteps([
+              {
+                agent: (data.agent as string) || "",
+                label: (data.label as string) || "",
+                output: (data.output as string) || "",
+              },
+            ]);
             if (steps.length > 0) {
-              onThinking(steps[steps.length - 1]);
+              onThinking(steps[0]);
             }
           } else if (eventType === "question") {
             const qData = (data.question as Record<string, unknown>) || {};
@@ -497,7 +549,7 @@ export function streamSubmitAnswer(
   auto_stop?: boolean;
   stop_reason?: string;
 }> {
-  const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/stream_answer`;
+  const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/stream_answer?locale=${encodeURIComponent(getLocale())}`;
   return streamRequest(url, "POST", { answer }, onThinking, "answer", opts);
 }
 
@@ -513,7 +565,7 @@ export function batchSubmitAnswer(
   auto_stop?: boolean;
   stop_reason?: string;
 }> {
-  const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/batch_answer`;
+  const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/batch_answer?locale=${encodeURIComponent(getLocale())}`;
   const body: Record<string, unknown> = { answers };
   if (opts?.submissionId) {
     body.submission_id = opts.submissionId;
@@ -529,7 +581,7 @@ export function streamColdStart(
   | { cold_start: boolean; round: number; label: string; question: string }
   | { cold_start_complete: boolean; initial_vector: unknown }
 > {
-  const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/cold_start`;
+  const url = `${BASE_URL}/api/v1/sessions/${encodeURIComponent(sessionId)}/cold_start?locale=${encodeURIComponent(getLocale())}`;
   return streamRequest(url, "GET", undefined, onThinking, "question", opts);
 }
 

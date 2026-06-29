@@ -80,7 +80,12 @@ export interface ChatMessage {
   content: string;
   item_data?: ItemData;
   batch_questions?: ItemData[];
-  cold_start_data?: { round: number; label: string };
+  cold_start_data?: {
+    round: number;
+    label: string;
+    labelKey?: string;
+    questionKey?: string;
+  };
   timestamp: string;
   thinking_steps?: ThinkingStep[];
 }

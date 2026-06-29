@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { buildBatchAnswerPayload } from "../../modules/response-utils";
+import { resolveDisplayContent } from "./message-bubble-content";
 import type { ChatMessage, ItemData } from "../../types";
 
 function makeBatchMessage(questions: ItemData[]): ChatMessage {
@@ -15,6 +16,83 @@ function makeBatchMessage(questions: ItemData[]): ChatMessage {
 function canSubmitBatch(questions: ItemData[], filledCount: number): boolean {
   return filledCount >= questions.length;
 }
+
+describe("resolveDisplayContent", () => {
+  const t = (key: string) => {
+    const map: Record<string, string> = {
+      "chat.coldStart.questions.background":
+        "Please introduce your background.",
+      "chat.feedback.correct": "Correct!",
+      "chat.feedback.skipModality.listening":
+        "Skipped. No more listening questions this round.",
+      "chat.welcome.coldStart": "Welcome!",
+    };
+    return map[key] ?? key;
+  };
+
+  it("translates cold_start question key", () => {
+    const msg: ChatMessage = {
+      id: "cs-1",
+      role: "cold_start",
+      content: "chat.coldStart.questions.background",
+      cold_start_data: {
+        round: 1,
+        label: "background",
+        labelKey: "chat.coldStart.labels.background",
+        questionKey: "chat.coldStart.questions.background",
+      },
+      timestamp: new Date().toISOString(),
+    };
+    expect(resolveDisplayContent(msg, t)).toBe(
+      "Please introduce your background."
+    );
+  });
+
+  it("falls back to content when cold_start has no questionKey", () => {
+    const msg: ChatMessage = {
+      id: "cs-2",
+      role: "cold_start",
+      content: "old plain text",
+      cold_start_data: { round: 1, label: "old" },
+      timestamp: new Date().toISOString(),
+    };
+    expect(resolveDisplayContent(msg, t)).toBe("old plain text");
+  });
+
+  it("translates feedback key", () => {
+    const msg: ChatMessage = {
+      id: "fb-1",
+      role: "feedback",
+      content: "chat.feedback.skipModality.listening",
+      timestamp: new Date().toISOString(),
+    };
+    expect(resolveDisplayContent(msg, t)).toBe(
+      "Skipped. No more listening questions this round."
+    );
+  });
+
+  it("translates system source message", () => {
+    const msg: ChatMessage = {
+      id: "sys-1",
+      role: "system",
+      source: "system",
+      content: "chat.welcome.coldStart",
+      timestamp: new Date().toISOString(),
+    };
+    expect(resolveDisplayContent(msg, t)).toBe("Welcome!");
+  });
+
+  it("renders llm source content verbatim", () => {
+    const msg: ChatMessage = {
+      id: "llm-1",
+      role: "system",
+      source: "llm",
+      content: "raw LLM output",
+      timestamp: new Date().toISOString(),
+    };
+    expect(resolveDisplayContent(msg, t)).toBe("raw LLM output");
+  });
+});
 
 describe("message-bubble batch answer logic", () => {
   const mockQuestions: ItemData[] = [

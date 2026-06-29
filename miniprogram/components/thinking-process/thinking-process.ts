@@ -1,11 +1,11 @@
 import { selectVisibleThinkingSteps } from "../../modules/thinking";
+import { getTranslatedThinkingLabel } from "../../modules/thinking-labels";
 import type { ThinkingStep } from "../../types";
 import i18nBehavior from "../../behaviors/i18n";
 import { buildI18n } from "../../utils/i18n-data";
 
 const thinkingI18nMap = {
   viewAll: "chat.thinking.viewAll",
-  title: "chat.thinking.title",
 };
 
 function buildThinkingI18n() {
@@ -14,6 +14,7 @@ function buildThinkingI18n() {
 
 interface VisibleStep extends ThinkingStep {
   preview: string;
+  displayAgent: string;
   _origIndex: number;
   _key: string;
 }
@@ -47,6 +48,7 @@ Component({
       const all = steps.map((s, i) => ({
         ...s,
         preview: (s.output || "").slice(0, 60),
+        displayAgent: getTranslatedThinkingLabel(s.agent, this.t.bind(this)),
         _origIndex: i,
         _key: `${s.agent_key || s.agent || "step"}-${i}`,
       }));

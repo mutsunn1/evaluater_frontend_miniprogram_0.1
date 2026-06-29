@@ -4,6 +4,7 @@ import {
   getSkipModalityOption,
   resolveResponseMode,
 } from "../../modules/response-utils";
+import { resolveDisplayContent } from "./message-bubble-content";
 
 import i18nBehavior from "../../behaviors/i18n";
 import { buildI18n } from "../../utils/i18n-data";
@@ -48,9 +49,10 @@ Component({
         });
       }
     },
-    "message.role, message.content, message.source, locale": function () {
-      this.updateDisplayContent();
-    },
+    "message.role, message.content, message.source, message.cold_start_data, locale":
+      function () {
+        this.updateDisplayContent();
+      },
     "message.id": function () {
       this.setData({
         batchAnswers: {},
@@ -93,8 +95,7 @@ Component({
     updateDisplayContent() {
       const msg = this.properties.message as ChatMessage;
       if (!msg) return;
-      const shouldTranslate = msg.source === "system";
-      const content = shouldTranslate ? this.t(msg.content) : msg.content;
+      const content = resolveDisplayContent(msg, this.t.bind(this));
       this.setData({ displayContent: content });
     },
 

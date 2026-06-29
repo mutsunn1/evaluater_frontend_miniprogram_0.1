@@ -26,20 +26,29 @@ describe("selectVisibleThinkingSteps", () => {
 
   it("prioritizes high-value title keywords", () => {
     const steps = [
-      step("普通步骤", "一般内容"),
-      step("题目摘要", "本题围绕语法点出题"),
-      step("另一个普通", "其他"),
+      step("CommonStep", "general content"),
+      step("Question Summary", "This question focuses on a grammar point"),
+      step("AnotherCommon", "other"),
     ];
     const result = selectVisibleThinkingSteps(steps, 2);
-    // The "题目摘要" step should be included
+    expect(result.some((s) => s.agent === "Question Summary")).toBe(true);
+  });
+
+  it("also recognizes legacy Chinese title keywords", () => {
+    const steps = [
+      step("CommonStep", "general content"),
+      step("题目摘要", "本题围绕语法点出题"),
+      step("AnotherCommon", "other"),
+    ];
+    const result = selectVisibleThinkingSteps(steps, 2);
     expect(result.some((s) => s.agent === "题目摘要")).toBe(true);
   });
 
   it("prioritizes high-value output keywords", () => {
     const steps = [
-      step("A", "一般内容"),
+      step("A", "general content"),
       step("B", "综合观察发现用户需要"),
-      step("C", "其他内容"),
+      step("C", "other content"),
     ];
     const result = selectVisibleThinkingSteps(steps, 2);
     expect(result.some((s) => s.agent === "B")).toBe(true);
@@ -47,13 +56,26 @@ describe("selectVisibleThinkingSteps", () => {
 
   it("deprioritizes low-value completion messages", () => {
     const steps = [
+      step("A", "Question generated"),
+      step("B", "meaningful analysis content"),
+      step("C", "Question quality check complete"),
+      step("D", "another common step"),
+    ];
+    const result = selectVisibleThinkingSteps(steps, 2);
+    expect(result.some((s) => s.agent === "A")).toBe(false);
+    expect(result.some((s) => s.agent === "C")).toBe(false);
+    expect(result.some((s) => s.agent === "B")).toBe(true);
+    expect(result.some((s) => s.agent === "D")).toBe(true);
+  });
+
+  it("also deprioritizes legacy Chinese completion messages", () => {
+    const steps = [
       step("A", "题目生成完成"),
       step("B", "有意义的分析内容"),
       step("C", "题目质量检查完成"),
       step("D", "另一个普通步骤"),
     ];
     const result = selectVisibleThinkingSteps(steps, 2);
-    // B (high value) should be included; D (default score) beats A and C (low score) on tie-break by recency
     expect(result.some((s) => s.agent === "A")).toBe(false);
     expect(result.some((s) => s.agent === "C")).toBe(false);
     expect(result.some((s) => s.agent === "B")).toBe(true);
@@ -63,7 +85,7 @@ describe("selectVisibleThinkingSteps", () => {
   it("preserves original chronological order in output", () => {
     const steps = [
       step("first", "x"),
-      step("题目摘要", "高价值"),
+      step("Question Summary", "high value"),
       step("second", "y"),
       step("third", "z"),
     ];
