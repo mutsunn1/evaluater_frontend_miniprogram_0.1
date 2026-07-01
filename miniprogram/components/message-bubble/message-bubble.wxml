@@ -16,7 +16,7 @@
 
     <!-- Feedback -->
     <view wx:elif="{{message.role === 'feedback'}}" class="feedback-wrap">
-      <text class="bubble-text">{{message.content}}</text>
+      <text class="bubble-text">{{displayContent}}</text>
       <view class="dimension-badge" wx:if="{{message.item_data && message.item_data.skill_dimension}}">
         {{message.item_data.skill_dimension}}
       </view>
